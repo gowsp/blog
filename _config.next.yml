@@ -1,0 +1,12 @@
+scheme: Gemini
+avatar:
+  url: /images/avatar.png
+
+social:
+  GitHub: https://github.com/gowsp || fab fa-github
+  E-Mail: mailto:wutianjue@gmail.com || fa fa-envelope
+
+github_banner:
+  enable: true
+  permalink: https://github.com/gowsp
+  title: Follow me on GitHub
