@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wuzk.ink","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="近期接到上头任务需要对现有注册的图片验证码进行一次改进，原有的验证码在被攻击之后变成一个数字计算图片，不仅数字模糊还要进行加减计算导致用户体验不好。不过好在之前早在四五月份主管就让我做了技术储备，这里就记录下相关的实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA实现点击式验证码">
+<meta property="og:url" content="https://www.wuzk.ink/2019/09/22/2019/20190919/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="近期接到上头任务需要对现有注册的图片验证码进行一次改进，原有的验证码在被攻击之后变成一个数字计算图片，不仅数字模糊还要进行加减计算导致用户体验不好。不过好在之前早在四五月份主管就让我做了技术储备，这里就记录下相关的实现。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-09-22T00:00:00.000Z">
+<meta property="article:modified_time" content="2019-09-22T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="JAVA">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.wuzk.ink/2019/09/22/2019/20190919/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JAVA实现点击式验证码 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">醉卧草庐听风雨</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2019/09/22/2019/20190919/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JAVA实现点击式验证码
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-22T00:00:00+00:00">2019-09-22</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>近期接到上头任务需要对现有注册的图片验证码进行一次改进，原有的验证码在被攻击之后变成一个数字计算图片，不仅数字模糊还要进行加减计算导致用户体验不好。不过好在之前早在四五月份主管就让我做了技术储备，这里就记录下相关的实现。</p>
+<span id="more"></span>
+
+<h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><p>实现思路其实挺简单的：</p>
+<ul>
+<li>使用一张大图随机切割出一张大小任意的背景图，一般长宽比例为2：1</li>
+<li>随机生成四个字符及四个不重叠的坐标点将其存入session中，对字符进行拉伸旋转合并至背景图中</li>
+<li>将前台传入的坐标点与session中的值进行比对</li>
+</ul>
+<p>思路已定那么就开始一步步实现它，本文的代码已提交至<a target="_blank" rel="noopener" href="https://gitee.com/wutianjue/blog_toss/tree/master/click-verify">码云</a></p>
+<h2 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h2><h3 id="验证图片生成"><a href="#验证图片生成" class="headerlink" title="验证图片生成"></a>验证图片生成</h3><p>由实现思路可知整个验证中最核心的部分是图片操作和文字的拉伸旋转写入，其实JAVA在这方面的支持还是有的，就是有点冷门儿不好找，下面这段代码就实现了相关的操作。包含了：</p>
+<ul>
+<li>背景图片的切割生成</li>
+<li>随机汉字和验证坐标点的生成</li>
+<li>随机字符写入背景图片</li>
+</ul>
+<p>这里定义了验证对象VerifyData，其包含两个属性：汉字字符，点坐标信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImageUtil</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Font font;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Resource background;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 初始化资源</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageUtil</span><span class="params">(ResourceLoader resourceLoader)</span> </span>&#123;</span><br><span class="line">        String location = ResourceLoader.CLASSPATH_URL_PREFIX + <span class="string">&quot;pic/verify_background_image.jpg&quot;</span>;</span><br><span class="line">        background = resourceLoader.getResource(location);</span><br><span class="line">        font = <span class="keyword">new</span> Font(<span class="string">&quot;宋体&quot;</span>, Font.BOLD, <span class="number">20</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 随机背景图片</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> BufferedImage <span class="title">randomBackground</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        InputStream inputStream = background.getInputStream();</span><br><span class="line">        BufferedImage src = ImageIO.read(inputStream);</span><br><span class="line">        Iterator&lt;ImageReader&gt; it = ImageIO.getImageReadersByFormatName(<span class="string">&quot;jpg&quot;</span>);</span><br><span class="line">        ImageReader reader = it.next();</span><br><span class="line">        ImageInputStream iis = ImageIO.createImageInputStream(inputStream);</span><br><span class="line">        reader.setInput(iis, <span class="keyword">true</span>);</span><br><span class="line">        Random random = <span class="keyword">new</span> Random();</span><br><span class="line">        <span class="keyword">int</span> x = random.nextInt(src.getWidth() - <span class="number">320</span>);</span><br><span class="line">        <span class="keyword">int</span> y = random.nextInt(src.getHeight() - <span class="number">160</span>);</span><br><span class="line">        <span class="keyword">return</span> src.getSubimage(x, y, <span class="number">320</span>, <span class="number">160</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 随机汉字</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">randomStr</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> hightPos, lowPos; <span class="comment">// 定义高低位</span></span><br><span class="line">        Random random = <span class="keyword">new</span> Random();</span><br><span class="line">        hightPos = (<span class="number">176</span> + Math.abs(random.nextInt(<span class="number">39</span>)));<span class="comment">// 获取高位值</span></span><br><span class="line">        lowPos = (<span class="number">161</span> + Math.abs(random.nextInt(<span class="number">93</span>)));<span class="comment">// 获取低位值</span></span><br><span class="line">        <span class="keyword">byte</span>[] b = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>];</span><br><span class="line">        b[<span class="number">0</span>] = (<span class="keyword">new</span> Integer(hightPos).byteValue());</span><br><span class="line">        b[<span class="number">1</span>] = (<span class="keyword">new</span> Integer(lowPos).byteValue());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> String(b, <span class="string">&quot;GBK&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 生成随机验证字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> java.util.<span class="function">List&lt;VerifyData&gt; <span class="title">randomChar</span><span class="params">(BufferedImage image)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> width = image.getWidth();</span><br><span class="line">        <span class="keyword">int</span> height = image.getHeight();</span><br><span class="line">        java.util.List&lt;VerifyData&gt; verifyDatas = <span class="keyword">new</span> ArrayList&lt;VerifyData&gt;();</span><br><span class="line">        Random random = <span class="keyword">new</span> Random();</span><br><span class="line">        Point point;</span><br><span class="line">        VerifyData v;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">            point = getVerifyPoint(verifyDatas, random, width, height);</span><br><span class="line">            v = rotateStr(random, point, image.getGraphics());</span><br><span class="line">            verifyDatas.add(v);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> verifyDatas;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 取不重复的坐标</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Point <span class="title">getVerifyPoint</span><span class="params">(java.util.List&lt;VerifyData&gt; verifyDatas, Random random, <span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> x = random.nextInt(width) % (<span class="number">280</span> - <span class="number">30</span> + <span class="number">1</span>) + <span class="number">30</span>;</span><br><span class="line">        <span class="keyword">int</span> y = random.nextInt(height) % (<span class="number">120</span> - <span class="number">30</span> + <span class="number">1</span>) + <span class="number">30</span>;</span><br><span class="line">        <span class="keyword">for</span> (VerifyData verifyData : verifyDatas) &#123;</span><br><span class="line">            <span class="keyword">if</span> (verifyData.getPoint().distance(x, y) &lt; <span class="number">50</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> getVerifyPoint(verifyDatas, random, width, height);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Point(x, y);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 拉伸旋转汉字并写入</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> VerifyData <span class="title">rotateStr</span><span class="params">(Random random, Point point, Graphics g)</span> </span>&#123;</span><br><span class="line">        Graphics2D g2d = (Graphics2D) g.create();</span><br><span class="line">        g2d.setFont(font);</span><br><span class="line">        g2d.setColor(getColor());</span><br><span class="line">        g2d.translate(point.x, point.y);</span><br><span class="line">        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);</span><br><span class="line">        <span class="comment">// 拉伸</span></span><br><span class="line">        g2d.scale(<span class="number">0.7</span> + Math.random(), <span class="number">0.7</span> + Math.random());</span><br><span class="line">        <span class="keyword">double</span> degree = random.nextInt(<span class="number">50</span>);</span><br><span class="line">        degree = random.nextBoolean() ? degree : -degree;</span><br><span class="line">        <span class="comment">// 旋转</span></span><br><span class="line">        g2d.rotate(degree * Math.PI / <span class="number">180</span>);</span><br><span class="line">        String str = randomStr();</span><br><span class="line">        g2d.drawString(str, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> VerifyData(str, point);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取随机颜色</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Color <span class="title">getColor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> R = (<span class="keyword">int</span>) (Math.random() * <span class="number">255</span>);</span><br><span class="line">        <span class="keyword">int</span> G = (<span class="keyword">int</span>) (Math.random() * <span class="number">255</span>);</span><br><span class="line">        <span class="keyword">int</span> B = (<span class="keyword">int</span>) (Math.random() * <span class="number">255</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Color(R, G, B);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="业务实现"><a href="#业务实现" class="headerlink" title="业务实现"></a>业务实现</h3><p>处理完最核心的图片操作之后，接下就是业务方面的处理了，分为几个步骤</p>
+<ul>
+<li>前端获取验证数据VerifyInfo，其中包含两个信息：图片ID;验证字符及顺序。对应信息保存在session中，对应关系为：手机号-&gt;验证信息;手机号+图片后缀-&gt;图片UUID;图片UUID-&gt;图片字节信息</li>
+<li>前端获取验证信息之后，持图片ID向服务端请求图片数据</li>
+<li>最后前端将用户的点击信息传至后端进行校验，由于点的位置不可能完全精确，所以校验距离阈值我设置为30。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Anonymous</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Logger logger = LoggerFactory.getLogger(getClass());</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ImageUtil imageUtil;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> HttpSession session;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取验证信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="meta">@RequestMapping(value = &quot;/anonymous/verifyInfo&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Response <span class="title">getVerifyInfo</span><span class="params">(String key)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        BufferedImage img = imageUtil.randomBackground();</span><br><span class="line">        List&lt;VerifyData&gt; datas = imageUtil.randomChar(img);</span><br><span class="line">        List&lt;String&gt; list = getVerifyChar(key, datas);</span><br><span class="line">        ByteArrayOutputStream output = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        ImageIO.write(img, <span class="string">&quot;png&quot;</span>, output);</span><br><span class="line">        String uuid = getImageId(key);</span><br><span class="line">        session.setAttribute(uuid, output);</span><br><span class="line">        Response response = <span class="keyword">new</span> Response();</span><br><span class="line">        VerifyInfo verifyInfo = <span class="keyword">new</span> VerifyInfo(uuid, list);</span><br><span class="line">        response.setResult(verifyInfo);</span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取验证字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> List&lt;String&gt; <span class="title">getVerifyChar</span><span class="params">(String key, List&lt;VerifyData&gt; datas)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> v = System.currentTimeMillis() % <span class="number">3</span>;</span><br><span class="line">        List&lt;VerifyData&gt; dataToStore = <span class="keyword">new</span> ArrayList&lt;VerifyData&gt;();</span><br><span class="line">        List&lt;String&gt; list = <span class="keyword">new</span> ArrayList&lt;String&gt;(datas.size());</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; datas.size(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i != v) &#123;</span><br><span class="line">                VerifyData e = datas.get(i);</span><br><span class="line">                dataToStore.add(e);</span><br><span class="line">                list.add(e.getStrData());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        session.setAttribute(key, dataToStore);</span><br><span class="line">        logger.info(dataToStore.toString());</span><br><span class="line">        <span class="keyword">return</span> list;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置并清理图片ID信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">getImageId</span><span class="params">(String key)</span> </span>&#123;</span><br><span class="line">        String uuid = UUID.randomUUID().toString().replaceAll(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        String name = key + MediaType.IMAGE_PNG_VALUE;</span><br><span class="line">        Object object = session.getAttribute(name);</span><br><span class="line">        <span class="keyword">if</span> (object != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 清理旧ID</span></span><br><span class="line">            session.removeAttribute(object.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        session.setAttribute(name, uuid);</span><br><span class="line">        <span class="keyword">return</span> uuid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 输出验证图片</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@RequestMapping(value = &quot;/anonymous/verifyImage&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getVerifyImage</span><span class="params">(String id, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        response.setHeader(<span class="string">&quot;Cache-Control&quot;</span>, <span class="string">&quot;no-cache, no-store&quot;</span>);</span><br><span class="line">        response.setContentType(MediaType.IMAGE_PNG_VALUE);</span><br><span class="line">        ByteArrayOutputStream output = (ByteArrayOutputStream) session.getAttribute(id);</span><br><span class="line">        <span class="keyword">if</span> (output == <span class="keyword">null</span>) &#123;</span><br><span class="line">            response.setStatus(<span class="number">404</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        response.getOutputStream().write(output.toByteArray());</span><br><span class="line">        response.flushBuffer();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="meta">@RequestMapping(value = &quot;/anonymous/verify&quot;, method = RequestMethod.POST)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Response <span class="title">verify</span><span class="params">(<span class="meta">@RequestBody</span> VerifyContent content)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> res = verdictValidCode(content);</span><br><span class="line">        Response response = <span class="keyword">new</span> Response();</span><br><span class="line">        logger.info(<span class="string">&quot;验证结果：&#123;&#125;&quot;</span>, res);</span><br><span class="line">        response.setResult(res);</span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">verdictValidCode</span><span class="params">(VerifyContent verifyContent)</span> </span>&#123;</span><br><span class="line">        String mobile = verifyContent.getMobile();</span><br><span class="line">        List&lt;VerifyData&gt; datas = (List&lt;VerifyData&gt;) session.getAttribute(mobile);</span><br><span class="line">        <span class="keyword">if</span> (datas == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;Point&gt; points = verifyContent.getPoints();</span><br><span class="line">        <span class="keyword">if</span> (points.size() != <span class="number">3</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; points.size(); i++) &#123;</span><br><span class="line">            Point point = points.get(i);</span><br><span class="line">            VerifyData verifyData = datas.get(i);</span><br><span class="line">            <span class="keyword">double</span> distance = verifyData.getPoint().distance(point);</span><br><span class="line">            <span class="comment">// 将传入点与session中点位置进行比对，距离超过30即验证失败</span></span><br><span class="line">            <span class="keyword">if</span> (distance &gt; <span class="number">30</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>人机验证一直是个较为让人头疼的问题，本次实现的点击式验证码在一定程度上可以提高了被攻破的门槛，但在人工智能和机器学习的大环境下实际上还是存在被破解的问题，现在市面上防御较强的验证手段号称是行为验证，这种验证通过记录用户在页面上的操作活动了来区分人机。不过目前这个点击式验证码还是够用的，希望能帮到各位。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/17/2019/20190903/" rel="prev" title="Spring Cache结合Memcached">
+      <i class="fa fa-chevron-left"></i> Spring Cache结合Memcached
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/13/2019/20191013/" rel="next" title="MyBatis Generator定制">
+      MyBatis Generator定制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">实现思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E5%9B%BE%E7%89%87%E7%94%9F%E6%88%90"><span class="nav-number">2.1.</span> <span class="nav-text">验证图片生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">业务实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">3.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-fa fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

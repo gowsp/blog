@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wuzk.ink","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="去年为解决json字段自定义返回曾写了个JsonReturnValueHandler组件，点此查看原文，当时图方便json序列化使用的fastjson，然而今年就爆出fastjson存在严重的安全漏洞，在升级了线上的fastjson版本之后，为了不再担惊受怕于是决定去fastjson，作为其编写使用者的我就只能再对JsonReturnValueHandler组件进行jackson改造。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring MVC实现jackson动态过滤字段">
+<meta property="og:url" content="https://www.wuzk.ink/2020/06/25/2020/20200625/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="去年为解决json字段自定义返回曾写了个JsonReturnValueHandler组件，点此查看原文，当时图方便json序列化使用的fastjson，然而今年就爆出fastjson存在严重的安全漏洞，在升级了线上的fastjson版本之后，为了不再担惊受怕于是决定去fastjson，作为其编写使用者的我就只能再对JsonReturnValueHandler组件进行jackson改造。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-25T00:00:00.000Z">
+<meta property="article:modified_time" content="2020-06-25T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.wuzk.ink/2020/06/25/2020/20200625/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring MVC实现jackson动态过滤字段 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">醉卧草庐听风雨</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2020/06/25/2020/20200625/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring MVC实现jackson动态过滤字段
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-25 00:00:00" itemprop="dateCreated datePublished" datetime="2020-06-25T00:00:00+00:00">2020-06-25</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>去年为解决json字段自定义返回曾写了个JsonReturnValueHandler组件，点此查看<a target="_blank" rel="noopener" href="https://wuzk.tk/2019/07/04/2019/20190704/">原文</a>，当时图方便json序列化使用的fastjson，然而今年就爆出fastjson存在严重的安全漏洞，在升级了线上的fastjson版本之后，为了不再担惊受怕于是决定去fastjson，作为其编写使用者的我就只能再对JsonReturnValueHandler组件进行jackson改造。</p>
+<span id="more"></span>
+
+<h2 id="方案分析"><a href="#方案分析" class="headerlink" title="方案分析"></a>方案分析</h2><p>阅读之前的fastjson方案，可知其组成主要有三部分：</p>
+<ul>
+<li>CustomJson以及CustomJsons注解</li>
+<li>基于HandlerMethodReturnValueHandler的JsonReturnValueHandler返回值处理</li>
+<li>fastjson的SerializeFilter字段的过滤器</li>
+</ul>
+<p>由于使用了注解，所以Controller使用方的变动可以忽略，但需要注意的是之前bean字段上的fastjson注解，需替换为jackson注解。那么需要改动就只有自定义注解处理的方式，由之前fastjson改为jackson。</p>
+<h2 id="jackson实现"><a href="#jackson实现" class="headerlink" title="jackson实现"></a>jackson实现</h2><p>关于jackson实现对字段的动态过滤，有以下几种方式：</p>
+<ul>
+<li>JsonView注解，此方式存在固有缺陷，即不支持嵌套过滤，若是A中的一个字段是B，那么对B过滤就会失效。而且此方案与现有的自定义注解方案难以融合，所以out</li>
+<li>StdSerializer序列化，此方案可行，但需要较多的代码实现，容易出错，有兴趣的可以自己挑战下</li>
+<li>FilterProvider，此方案实现难度较低，直接通过不同的FilterProvider来实现，网上大多数教程也是采用此方式</li>
+</ul>
+<p>FilterProvider的作用是根据filterId查到相关的PropertyFilter，由PropertyFilter决定字段是否被序列化，按照此逻辑CustomJson中targetClass可以当作filterId，includes和excludes则可以包装为PropertyFilter。相关代码例子已上至<a target="_blank" rel="noopener" href="https://gitee.com/wutianjue/blog_toss/tree/master/jackson-customjson">码云</a>，下面直接是核心的代码实现</p>
+<h3 id="自定义FilterProvider和PropertyFilter"><a href="#自定义FilterProvider和PropertyFilter" class="headerlink" title="自定义FilterProvider和PropertyFilter"></a>自定义FilterProvider和PropertyFilter</h3><p>这里定义了JsonFilterProvider和JsonPropertyFilter，由JsonFilterProvider持有<code>Map&lt;Class, JsonPropertyFilter&gt;</code>映射关系，而JsonPropertyFilter则实现了对includes和excludes的处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JsonFilterProvider</span> <span class="keyword">extends</span> <span class="title">FilterProvider</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Object, PropertyFilter&gt; cache;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">JsonFilterProvider</span><span class="params">(Map&lt;Object, PropertyFilter&gt; cache)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.cache = cache;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> BeanPropertyFilter <span class="title">findFilter</span><span class="params">(Object filterId)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PropertyFilter <span class="title">findPropertyFilter</span><span class="params">(Object filterId, Object valueToFilter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> cache.get(filterId);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JsonPropertyFilter</span> <span class="keyword">extends</span> <span class="title">SimpleBeanPropertyFilter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;String&gt; includes;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;String&gt; excludes;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">JsonPropertyFilter</span><span class="params">(String[] includes, String[] excludes)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.includes = Arrays.asList(includes);</span><br><span class="line">        <span class="keyword">this</span>.excludes = Arrays.asList(excludes);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">include</span><span class="params">(PropertyWriter writer)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 字段是否被序列化</span></span><br><span class="line">        String name = writer.getName();</span><br><span class="line">        <span class="keyword">if</span> (includes.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">return</span> !excludes.contains(name);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> includes.contains(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> JsonPropertyFilter <span class="title">build</span><span class="params">(CustomJson customJson)</span> </span>&#123;</span><br><span class="line">        String[] includes = customJson.includes();</span><br><span class="line">        String[] excludes = customJson.excludes();</span><br><span class="line">        <span class="comment">// includes，excludes两种类型仅能存在一种</span></span><br><span class="line">        <span class="keyword">boolean</span> allExists = includes.length != <span class="number">0</span> &amp;&amp; excludes.length != <span class="number">0</span>;</span><br><span class="line">        Assert.isTrue(!allExists, <span class="string">&quot;includes or excludes must be empty&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> JsonPropertyFilter(includes, excludes);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="JsonReturnValueHandler改造"><a href="#JsonReturnValueHandler改造" class="headerlink" title="JsonReturnValueHandler改造"></a>JsonReturnValueHandler改造</h3><p>基础类准备好之后就是如何对已有的JsonReturnValueHandler进行改造了。其中值得注意的是baseObjectMapper的创建，这里需要重写findFilterId的实现，否则序列化对象将无法触发JsonFilterProvider获取指定的JsonPropertyFilter</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JsonReturnValueHandler</span> <span class="keyword">implements</span> <span class="title">HandlerMethodReturnValueHandler</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 使用guava缓存已处理方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> LoadingCache&lt;MethodParameter, ObjectWriter&gt; cache = CacheBuilder.newBuilder()</span><br><span class="line">            .build(<span class="keyword">new</span> CacheLoader&lt;MethodParameter, ObjectWriter&gt;() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> ObjectWriter <span class="title">load</span><span class="params">(MethodParameter parameter)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">return</span> build(parameter);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 指定基础的ObjectMapper</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> ObjectMapper baseObjectMapper = <span class="keyword">new</span> ObjectMapper()</span><br><span class="line">            .setAnnotationIntrospector(<span class="keyword">new</span> JacksonAnnotationIntrospector() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> Object <span class="title">findFilterId</span><span class="params">(Annotated annotated)</span> </span>&#123;</span><br><span class="line">                    <span class="comment">// 提取待序列化对象的class作为FilterId</span></span><br><span class="line">                    <span class="keyword">if</span> (annotated <span class="keyword">instanceof</span> AnnotatedClass) &#123;</span><br><span class="line">                        <span class="keyword">return</span> annotated.getRawType();</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">supportsReturnType</span><span class="params">(MethodParameter methodParameter)</span> </span>&#123;</span><br><span class="line">        CustomJson customJson = methodParameter.getMethodAnnotation(CustomJson.class);</span><br><span class="line">        CustomJsons customJsons = methodParameter.getMethodAnnotation(CustomJsons.class);</span><br><span class="line">        Assert.isTrue(customJson == <span class="keyword">null</span> || customJsons == <span class="keyword">null</span>, <span class="string">&quot;only use one of CustomJson or CustomJsons &quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> customJson != <span class="keyword">null</span> || customJsons != <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleReturnValue</span><span class="params">(Object o, MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,</span></span></span><br><span class="line"><span class="params"><span class="function">                                  NativeWebRequest nativeWebRequest)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        modelAndViewContainer.setRequestHandled(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);</span><br><span class="line">        response.setContentType(MediaType.APPLICATION_JSON_VALUE);</span><br><span class="line">        response.setCharacterEncoding(StandardCharsets.UTF_8.name());</span><br><span class="line">        <span class="comment">// 获取ObjectWriter写入结果</span></span><br><span class="line">        cache.get(methodParameter).writeValue(response.getWriter(), o);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 将MethodParameter转换为ObjectWriter</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> ObjectWriter <span class="title">build</span><span class="params">(MethodParameter parameter)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// key为CustomJson的targetClass，value为includes,excludes包装后的JsonPropertyFilter</span></span><br><span class="line">        Map&lt;Object, PropertyFilter&gt; cache;</span><br><span class="line">        CustomJson customJson = parameter.getMethodAnnotation(CustomJson.class);</span><br><span class="line">        <span class="keyword">if</span> (customJson == <span class="keyword">null</span>) &#123;</span><br><span class="line">            cache = Arrays.stream(parameter.getMethodAnnotation(CustomJsons.class).value())</span><br><span class="line">                    .collect(Collectors.toMap(CustomJson::targetClass, JsonPropertyFilter::build));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            cache = Collections.singletonMap(customJson.targetClass(), JsonPropertyFilter.build(customJson));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> baseObjectMapper.writer(<span class="keyword">new</span> JsonFilterProvider(cache));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>经过上述代码改造，可以无感将CustomJson的处理由fastjson切换到jackson，让人摆脱fastjson无穷无尽的漏洞问题，实现一劳永逸。不过话说自己最近人有些疲惫，一晃距离上次博客发表过去3个月了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"># Spring</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/11/2020/20200307/" rel="prev" title="JMH基准测试">
+      <i class="fa fa-chevron-left"></i> JMH基准测试
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/19/2020/20200719/" rel="next" title="JAVA枚举类略解">
+      JAVA枚举类略解 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">方案分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jackson%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">jackson实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89FilterProvider%E5%92%8CPropertyFilter"><span class="nav-number">2.1.</span> <span class="nav-text">自定义FilterProvider和PropertyFilter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JsonReturnValueHandler%E6%94%B9%E9%80%A0"><span class="nav-number">2.2.</span> <span class="nav-text">JsonReturnValueHandler改造</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">3.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-fa fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

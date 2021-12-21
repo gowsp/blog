@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wuzk.ink","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="2020年真是蝠如东海啊，开年就凸显出线上服务的性能问题，在手忙脚乱拆东墙补西墙的处理之后勉强算是稳定了下来，但随之而来的是对公司项目的优化和改进，然而改进了多少优化了多少，是需要量化的数据来表示，一般是使用例如jmeter之类的工具来量化数据，作为开发人员则可用JAVA大佬们写的基准测试工具JMH，其上手使用比较简单，下面就简单的介绍下它。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JMH基准测试">
+<meta property="og:url" content="https://www.wuzk.ink/2020/03/11/2020/20200307/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="2020年真是蝠如东海啊，开年就凸显出线上服务的性能问题，在手忙脚乱拆东墙补西墙的处理之后勉强算是稳定了下来，但随之而来的是对公司项目的优化和改进，然而改进了多少优化了多少，是需要量化的数据来表示，一般是使用例如jmeter之类的工具来量化数据，作为开发人员则可用JAVA大佬们写的基准测试工具JMH，其上手使用比较简单，下面就简单的介绍下它。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-11T00:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-11T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="JAVA">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.wuzk.ink/2020/03/11/2020/20200307/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JMH基准测试 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">醉卧草庐听风雨</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2020/03/11/2020/20200307/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JMH基准测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-11 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-11T00:00:00+00:00">2020-03-11</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>2020年真是蝠如东海啊，开年就凸显出线上服务的性能问题，在手忙脚乱拆东墙补西墙的处理之后勉强算是稳定了下来，但随之而来的是对公司项目的优化和改进，然而改进了多少优化了多少，是需要量化的数据来表示，一般是使用例如jmeter之类的工具来量化数据，作为开发人员则可用JAVA大佬们写的基准测试工具<a target="_blank" rel="noopener" href="https://openjdk.java.net/projects/code-tools/jmh/">JMH</a>，其上手使用比较简单，下面就简单的介绍下它。</p>
+<span id="more"></span>
+
+<h2 id="JMH介绍"><a href="#JMH介绍" class="headerlink" title="JMH介绍"></a>JMH介绍</h2><p>JMH可以针对jvm程序的单个方法进行全方位的评估，通过简单的注解设置就可以进行性能测试，这里以一个例子为各位介绍下JMH，主要是对其注解做一些简单介绍，如果想要深入学习的话建议查阅官方的<a target="_blank" rel="noopener" href="https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/">代码样例</a></p>
+<h2 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h2><p>这里以json序列化为例，在此之前一直会有个疑问，序列化里jackson和fastjson哪个比较快？大家都说fastjson比较快，但是一直没有实际验证下，现在就用JMH来测测看是不是如此。先引入依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.openjdk.jmh<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jmh-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;jmh.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.openjdk.jmh<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jmh-generator-annprocess<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;jmh.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;fastjson.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.fasterxml.jackson.core<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jackson-databind<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;jackson.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>编写基准测试代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Threads(3)</span> <span class="comment">// 使用3个线程进行基准测试</span></span><br><span class="line"><span class="meta">@State(Scope.Benchmark)</span> <span class="comment">// 实例共享范围为所有基准测试线程</span></span><br><span class="line"><span class="meta">@Fork(value = 1, warmups = 1)</span> <span class="comment">// 预热1次，采样1次</span></span><br><span class="line"><span class="meta">@Warmup(iterations = 1)</span> <span class="comment">// 预热迭代1次</span></span><br><span class="line"><span class="meta">@Measurement(iterations = 1)</span> <span class="comment">// 采样迭代1次</span></span><br><span class="line"><span class="meta">@OutputTimeUnit(TimeUnit.MILLISECONDS)</span> <span class="comment">// 采样结果输出单位毫秒</span></span><br><span class="line"><span class="meta">@BenchmarkMode(&#123;Mode.AverageTime, Mode.Throughput&#125;)</span> <span class="comment">// 每次执行平均耗时多少，单位时间内执行多少次</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JsonBenchmark</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Random random;</span><br><span class="line">    <span class="keyword">private</span> ObjectMapper objectMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Setup</span> <span class="comment">// 基准测试之前执行</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initParam</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        random = <span class="keyword">new</span> Random();</span><br><span class="line">        objectMapper = <span class="keyword">new</span> ObjectMapper();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@TearDown</span> <span class="comment">// 基准测试之后调用执行</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">release</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        objectMapper = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Benchmark</span> <span class="comment">// 标识此方法进行基准测试</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">jackson</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        Set&lt;Integer&gt; singleton = Collections.singleton(random.nextInt(<span class="number">100</span>));</span><br><span class="line">        objectMapper.writeValueAsString(singleton);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Benchmark</span> <span class="comment">// 标识此方法进行基准测试</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fastjson</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Set&lt;Integer&gt; singleton = Collections.singleton(random.nextInt(<span class="number">100</span>));</span><br><span class="line">        JSON.toJSONString(singleton);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> RunnerException </span>&#123;</span><br><span class="line">        Options options = <span class="keyword">new</span> OptionsBuilder()</span><br><span class="line">                .include(JsonBenchmark.class.getSimpleName())</span><br><span class="line">                .build();</span><br><span class="line">        <span class="keyword">new</span> Runner(options).run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上代码就完成了对json序列化的对比测试，可能一下子看是一头雾水，下面就来详细的介绍下例子里面的注解。</p>
+<p><strong>@Threads</strong></p>
+<p>注解在方法或类上，用来定义基准测试中多少个线程执行。例：<code>@Threads(3)</code>，表示使用3个线程进行基准测试。</p>
+<p><strong>@Benchmark</strong></p>
+<p>仅能注解在方法上，被注解的方法将在基准测试中被执行并记录相关运行信息。</p>
+<p><strong>@OutputTimeUnit</strong></p>
+<p>可注解在类或方法上，表示基准测试的时间单位，一般用毫秒或秒。例：<code>@OutputTimeUnit(TimeUnit.MILLISECONDS)</code>，以毫秒为单位统计。</p>
+<p><strong>@BenchmarkMode</strong></p>
+<p>基准测试模式，可注解在类或方法上，表示@Benchmark方法将被收集哪些数据，其包含以下几种模式：</p>
+<ul>
+<li>Throughput：单位时间内方法执行的次数，基于迭代持续时间</li>
+<li>AverageTime：单次方法执行的平均耗时，基于迭代持续时间</li>
+<li>SampleTime：采样每次操作的时间，基于迭代持续时间</li>
+<li>SingleShotTime：测量单次操作的时间，通常是用于冷启动测算方法的执行时间，使用较少</li>
+<li>All：以上全部模式</li>
+</ul>
+<p>以上介绍的这些注解组合起来用一句话概括就是：基准测试用几个线程以什么时间单位对哪些方法采集何种数据。</p>
+<p><strong>@Fork</strong></p>
+<p>执行次数，可注解在类或方法上，常用的是定义value和warmup值</p>
+<ul>
+<li>value表示正式测量时运行次数，此数据会被记录</li>
+<li>warmup表示正式测量前预热次数，预热表示运行但不进行数据统计</li>
+</ul>
+<p>例：<code>@Fork(value = 1, warmups = 3)</code>，预热3次后进行一次正式的采样。可能有人会问为什么会有个这个warmup，直接开测不行吗？这里就需要了解下jvm运行机制，一般情况下jvm是读取class字节码运行，但某些字节码被反复执行了之后，jvm就会动用jit对这部分字节码尝试编译成机器码，转换成机器码后执行效率会提升不少，所以使用warmup预热更能了解到被测方法的极限所在。</p>
+<p><strong>@Warmup</strong></p>
+<p>预热相关的参数控制，可注解在类或方法上，包含如下参数：</p>
+<ul>
+<li>iterations：迭代次数</li>
+<li>time：每次迭代的时长</li>
+<li>timeUnit：时长单位</li>
+<li>batchSize：每次操作中基准方法调用次数</li>
+</ul>
+<p>例：<code>@Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.SECONDS, batchSize = 1)</code>，表示有三次迭代运行，每次持续10秒，每次操作调用一次基准方法</p>
+<p><strong>@Measurement</strong></p>
+<p>实际测量时相关参数，可注解在类或方法上，注解参数与@Warmup一样。</p>
+<p><strong>OperationsPerInvocation</strong></p>
+<p>随便提下这个注解，这个注解仅在处理循环类型的基准测试中才会使用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Benchmark</span></span><br><span class="line"><span class="meta">@OperationsPerInvocation(10)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">         <span class="comment">// do something</span></span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上例子实际测试中1次调用有10次循环，但是JMH不清楚内部逻辑，在采样时仍认为是1次调用，为了校准数据加上<code>@OperationsPerInvocation(10)</code>来标识，这样JMH采样就知道这是10次调用。<br>关于以上这部分注解可以将其概括为：进行几次预热，几次采样，每次操作的处理方式。</p>
+<p><strong>@State</strong></p>
+<p>实例共享范围，只能注解在类上，目前有三种：</p>
+<ul>
+<li>Benchmark：基准测试范围内所有线程均访问同一实例</li>
+<li>Group：同一线程组访问同一实例，不同线程组有不同实例</li>
+<li>Thread：每个线程拥有各自的实例，相互直接不共享</li>
+</ul>
+<p><strong>@Setup</strong></p>
+<p>仅可以注解在方法上，该方法在特定阶段之前执行，阶段包括以下三种：</p>
+<ul>
+<li>Trial：基准测试前后，此为默认值</li>
+<li>Iteration：每轮迭代前后</li>
+<li>Invocation：每次方法调用前后</li>
+</ul>
+<p>如示例中所写的那样，在基准测试前对jakcson的实例和用到的随机数生成器进行初始化。</p>
+<p><strong>@TearDown</strong></p>
+<p>与<code>@Setup</code>类似不过是在特定阶段之后执行，一般用于连接的断开或是资源的释放，示例中只是做了一个简单置空操作。</p>
+<p><strong>@Param</strong></p>
+<p>这里提一个例子中没有的一个注解<code>@Param</code>，这个注解仅能注解在成员变量上，可以按序对成员变量进行赋值然后测试，需要和<code>@State</code>注解联合使用，字段类型有限必须即使基本类型和枚举类型。下面是官方的示例我简化了部分。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@State(Scope.Benchmark)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Params</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Param(&#123;&quot;1&quot;, &quot;31&quot;, &quot;65&quot;, &quot;101&quot;, &quot;103&quot;&#125;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> arg;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Param(&#123;&quot;0&quot;, &quot;1&quot;, &quot;2&quot;, &quot;4&quot;, &quot;8&quot;, &quot;16&quot;, &quot;32&quot;&#125;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> certainty;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">bench</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> BigInteger.valueOf(arg).isProbablePrime(certainty);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当明确知道哪些参数要测试可以这么用，JMH会对每个参数依次进行赋值测试，所以执行周期会变长，上述例子将会进行5X7次的赋值测试。好了，以上这部分定义了基准测试中关于参数资源的一些动作，下面就来执行下。</p>
+<h2 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h2><p>关于JMH的执行其实比较简单，无论你是打成jar还是直接在IDE里直接执行都可以，此处我直接在IDE中执行，最后得到如下结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br></pre></td><td class="code"><pre><span class="line"># JMH version: 1.21</span><br><span class="line"># VM version: JDK 1.8.0_242, OpenJDK 64-Bit Server VM, 25.242-b20</span><br><span class="line"># VM invoker: F:\Environment\jdk1.8.0.242\jre\bin\java.exe</span><br><span class="line"># VM options: -javaagent:C:\Work\IDE\ideaIC\lib\idea_rt.jar=54743:C:\Work\IDE\ideaIC\bin -Dfile.encoding=UTF-8</span><br><span class="line"># Warmup: 3 iterations, 10 s each</span><br><span class="line"># Measurement: 3 iterations, 10 s each</span><br><span class="line"># Timeout: 10 min per iteration</span><br><span class="line"># Threads: 3 threads, will synchronize iterations</span><br><span class="line"># Benchmark mode: Throughput, ops/time</span><br><span class="line"># Benchmark: com.hst.redis.JsonBenchmark.fastjson</span><br><span class="line"></span><br><span class="line"># Run progress: 0.00% complete, ETA 00:08:00</span><br><span class="line"># Warmup Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: 13461.139 ops/ms</span><br><span class="line"># Warmup Iteration   2: 13607.172 ops/ms</span><br><span class="line"># Warmup Iteration   3: 13722.218 ops/ms</span><br><span class="line">Iteration   1: 13705.623 ops/ms</span><br><span class="line">Iteration   2: 13706.762 ops/ms</span><br><span class="line">Iteration   3: 13700.618 ops/ms</span><br><span class="line"></span><br><span class="line"># Run progress: 12.50% complete, ETA 00:07:12</span><br><span class="line"># Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: 13576.412 ops/ms</span><br><span class="line"># Warmup Iteration   2: 13103.999 ops/ms</span><br><span class="line"># Warmup Iteration   3: 13561.005 ops/ms</span><br><span class="line">Iteration   1: 13666.359 ops/ms</span><br><span class="line">Iteration   2: 13684.048 ops/ms</span><br><span class="line">Iteration   3: 13694.118 ops/ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Result &quot;com.hst.redis.JsonBenchmark.fastjson&quot;:</span><br><span class="line">  13681.508 ±(99.9%) 256.375 ops/ms [Average]</span><br><span class="line">  (min, avg, max) = (13666.359, 13681.508, 13694.118), stdev = 14.053</span><br><span class="line">  CI (99.9%): [13425.133, 13937.883] (assumes normal distribution)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># JMH version: 1.21</span><br><span class="line"># VM version: JDK 1.8.0_242, OpenJDK 64-Bit Server VM, 25.242-b20</span><br><span class="line"># VM invoker: F:\Environment\jdk1.8.0.242\jre\bin\java.exe</span><br><span class="line"># VM options: -javaagent:C:\Work\IDE\ideaIC\lib\idea_rt.jar=54743:C:\Work\IDE\ideaIC\bin -Dfile.encoding=UTF-8</span><br><span class="line"># Warmup: 3 iterations, 10 s each</span><br><span class="line"># Measurement: 3 iterations, 10 s each</span><br><span class="line"># Timeout: 10 min per iteration</span><br><span class="line"># Threads: 3 threads, will synchronize iterations</span><br><span class="line"># Benchmark mode: Throughput, ops/time</span><br><span class="line"># Benchmark: com.hst.redis.JsonBenchmark.jackson</span><br><span class="line"></span><br><span class="line"># Run progress: 25.00% complete, ETA 00:06:08</span><br><span class="line"># Warmup Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: 8936.082 ops/ms</span><br><span class="line"># Warmup Iteration   2: 9124.162 ops/ms</span><br><span class="line"># Warmup Iteration   3: 9188.244 ops/ms</span><br><span class="line">Iteration   1: 9015.721 ops/ms</span><br><span class="line">Iteration   2: 9140.219 ops/ms</span><br><span class="line">Iteration   3: 9194.396 ops/ms</span><br><span class="line"></span><br><span class="line"># Run progress: 37.50% complete, ETA 00:05:06</span><br><span class="line"># Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: 7456.722 ops/ms</span><br><span class="line"># Warmup Iteration   2: 7484.857 ops/ms</span><br><span class="line"># Warmup Iteration   3: 7290.126 ops/ms</span><br><span class="line">Iteration   1: 7318.023 ops/ms</span><br><span class="line">Iteration   2: 7315.458 ops/ms</span><br><span class="line">Iteration   3: 7212.783 ops/ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Result &quot;com.hst.redis.JsonBenchmark.jackson&quot;:</span><br><span class="line">  7282.088 ±(99.9%) 1095.236 ops/ms [Average]</span><br><span class="line">  (min, avg, max) = (7212.783, 7282.088, 7318.023), stdev = 60.034</span><br><span class="line">  CI (99.9%): [6186.852, 8377.324] (assumes normal distribution)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># JMH version: 1.21</span><br><span class="line"># VM version: JDK 1.8.0_242, OpenJDK 64-Bit Server VM, 25.242-b20</span><br><span class="line"># VM invoker: F:\Environment\jdk1.8.0.242\jre\bin\java.exe</span><br><span class="line"># VM options: -javaagent:C:\Work\IDE\ideaIC\lib\idea_rt.jar=54743:C:\Work\IDE\ideaIC\bin -Dfile.encoding=UTF-8</span><br><span class="line"># Warmup: 3 iterations, 10 s each</span><br><span class="line"># Measurement: 3 iterations, 10 s each</span><br><span class="line"># Timeout: 10 min per iteration</span><br><span class="line"># Threads: 3 threads, will synchronize iterations</span><br><span class="line"># Benchmark mode: Average time, time/op</span><br><span class="line"># Benchmark: com.hst.redis.JsonBenchmark.fastjson</span><br><span class="line"></span><br><span class="line"># Run progress: 50.00% complete, ETA 00:04:05</span><br><span class="line"># Warmup Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: ≈ 10⁻⁴ ms/op</span><br><span class="line"># Warmup Iteration   2: ≈ 10⁻⁴ ms/op</span><br><span class="line"># Warmup Iteration   3: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   1: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   2: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   3: ≈ 10⁻⁴ ms/op</span><br><span class="line"></span><br><span class="line"># Run progress: 62.50% complete, ETA 00:03:03</span><br><span class="line"># Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: ≈ 10⁻⁴ ms/op</span><br><span class="line"># Warmup Iteration   2: ≈ 10⁻⁴ ms/op</span><br><span class="line"># Warmup Iteration   3: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   1: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   2: ≈ 10⁻⁴ ms/op</span><br><span class="line">Iteration   3: ≈ 10⁻⁴ ms/op</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Result &quot;com.hst.redis.JsonBenchmark.fastjson&quot;:</span><br><span class="line">  ≈ 10⁻⁴ ms/op</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># JMH version: 1.21</span><br><span class="line"># VM version: JDK 1.8.0_242, OpenJDK 64-Bit Server VM, 25.242-b20</span><br><span class="line"># VM invoker: F:\Environment\jdk1.8.0.242\jre\bin\java.exe</span><br><span class="line"># VM options: -javaagent:C:\Work\IDE\ideaIC\lib\idea_rt.jar=54743:C:\Work\IDE\ideaIC\bin -Dfile.encoding=UTF-8</span><br><span class="line"># Warmup: 3 iterations, 10 s each</span><br><span class="line"># Measurement: 3 iterations, 10 s each</span><br><span class="line"># Timeout: 10 min per iteration</span><br><span class="line"># Threads: 3 threads, will synchronize iterations</span><br><span class="line"># Benchmark mode: Average time, time/op</span><br><span class="line"># Benchmark: com.hst.redis.JsonBenchmark.jackson</span><br><span class="line"></span><br><span class="line"># Run progress: 75.00% complete, ETA 00:02:02</span><br><span class="line"># Warmup Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: ≈ 10⁻³ ms/op</span><br><span class="line"># Warmup Iteration   2: ≈ 10⁻³ ms/op</span><br><span class="line"># Warmup Iteration   3: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   1: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   2: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   3: 0.001 ±(99.9%) 0.001 ms/op</span><br><span class="line"></span><br><span class="line"># Run progress: 87.50% complete, ETA 00:01:01</span><br><span class="line"># Fork: 1 of 1</span><br><span class="line"># Warmup Iteration   1: ≈ 10⁻³ ms/op</span><br><span class="line"># Warmup Iteration   2: ≈ 10⁻³ ms/op</span><br><span class="line"># Warmup Iteration   3: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   1: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   2: ≈ 10⁻³ ms/op</span><br><span class="line">Iteration   3: 0.001 ±(99.9%) 0.001 ms/op</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Result &quot;com.hst.redis.JsonBenchmark.jackson&quot;:</span><br><span class="line">  ≈ 10⁻³ ms/op</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Run complete. Total time: 00:08:09</span><br><span class="line"></span><br><span class="line">REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on</span><br><span class="line">why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial</span><br><span class="line">experiments, perform baseline and negative tests that provide experimental control, make sure</span><br><span class="line">the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.</span><br><span class="line">Do not assume the numbers tell you what you want them to tell.</span><br><span class="line"></span><br><span class="line">Benchmark                Mode  Cnt      Score      Error   Units</span><br><span class="line">JsonBenchmark.fastjson  thrpt    3  13681.508 ±  256.375  ops/ms</span><br><span class="line">JsonBenchmark.jackson   thrpt    3   7282.088 ± 1095.236  ops/ms</span><br><span class="line">JsonBenchmark.fastjson   avgt    3     ≈ 10⁻⁴              ms/op</span><br><span class="line">JsonBenchmark.jackson    avgt    3     ≈ 10⁻³              ms/op</span><br></pre></td></tr></table></figure>
+
+<p>完整的日志比较长，可以跳过中间执行部分，关注最后的结果就可以，主要看Score部分的数据</p>
+<ul>
+<li>fastjson 每毫秒执行13681.508次，而jackson为7282.088次</li>
+<li>fastjson 每次操作需10⁻⁴毫秒，而jackson为10⁻³毫秒</li>
+</ul>
+<p>测试结果一目了然，之前还对fastjson还有所怀疑，现在看来确实挺快的。当然这只是我本机的运行之后的数据，每台电脑性能不同测出的数据也不一样，但这个数据是可以参考的。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>之前还想着性能测试如何量化，经过对JMH的学习了解之后这个问题就迎刃而解了，而且以后对任何性能有关的数据有怀疑的都可以直接用JMH测一测验证下，就比如json序列化哪家强这种问题，希望对各位有所帮助。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/10/2020/20200106/" rel="prev" title="基于git提交日志的增量持续集成">
+      <i class="fa fa-chevron-left"></i> 基于git提交日志的增量持续集成
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/25/2020/20200625/" rel="next" title="Spring MVC实现jackson动态过滤字段">
+      Spring MVC实现jackson动态过滤字段 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JMH%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">JMH介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">举例说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">结果分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">4.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-fa fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

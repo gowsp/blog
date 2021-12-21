@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wuzk.ink","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The Java Virtual Machine Specification简称Jvm规范是由官方推出介绍Java虚拟机的文档，作为官方Jvm文档在国内也有不少分析介绍，但是遗憾是在国内相互转载，信息大多有偏差，而其他人学习理解也可能会扩大这种偏差。于是我翻阅了官方的Java 8虚拟机规范，借着谷歌翻译学习了下，下面分享一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jvm规范学习之源码编译">
+<meta property="og:url" content="https://www.wuzk.ink/2018/06/30/2018/20180630/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="The Java Virtual Machine Specification简称Jvm规范是由官方推出介绍Java虚拟机的文档，作为官方Jvm文档在国内也有不少分析介绍，但是遗憾是在国内相互转载，信息大多有偏差，而其他人学习理解也可能会扩大这种偏差。于是我翻阅了官方的Java 8虚拟机规范，借着谷歌翻译学习了下，下面分享一下。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-30T09:52:39.000Z">
+<meta property="article:modified_time" content="2018-06-30T09:52:39.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Jvm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.wuzk.ink/2018/06/30/2018/20180630/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Jvm规范学习之源码编译 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">醉卧草庐听风雨</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2018/06/30/2018/20180630/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Jvm规范学习之源码编译
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-06-30 09:52:39" itemprop="dateCreated datePublished" datetime="2018-06-30T09:52:39+00:00">2018-06-30</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>The Java Virtual Machine Specification简称Jvm规范是由官方推出介绍Java虚拟机的文档，作为官方Jvm文档在国内也有不少分析介绍，但是遗憾是在国内相互转载，信息大多有偏差，而其他人学习理解也可能会扩大这种偏差。于是我翻阅了官方的<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/index.html">Java 8虚拟机规范</a>，借着谷歌翻译学习了下，下面分享一下。</p>
+<span id="more"></span>
+
+<h2 id="Jvm规范内容"><a href="#Jvm规范内容" class="headerlink" title="Jvm规范内容"></a>Jvm规范内容</h2><p>在官方的<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-1.html">Java 8虚拟机规范序言</a>中介绍了整个规范分为七章，集合这七颗龙珠之后将会获得Jvm的神奇力量。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-1.html">第一章</a>：序言，介绍Jvm历史和概括所讲内容</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html">第二章</a>：概述了Jvm体系结构</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-3.html">第三章</a>：介绍Java源码如何转换为Jvm指令集</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html">第四章</a>：描述了Class文件的格式</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html">第五章</a>：描述了Jvm的启动以及类和接口的加载，链接和初始化</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html">第六章</a>：按字母顺序详细介绍了每个Jvm指令</li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-7.html">第七章</a>：以表格的形式展示所有的Jvm指令</li>
+</ul>
+<p>第二章是整个Jvm规范中最为重要的部分，但是我的建议是第二章先略读，在学习了解三四五章节之后再精读第二章节可以达到最佳的理解效果。六七章节类似于速查手册，因此了解即可。在下一部分我将会来介绍Jvm第三章的内容：Java源码编译为Jvm指令。</p>
+<h2 id="Jvm指令的基本格式"><a href="#Jvm指令的基本格式" class="headerlink" title="Jvm指令的基本格式"></a>Jvm指令的基本格式</h2><p>在第三章开篇介绍了Java含两种编译器：</p>
+<ul>
+<li>源码编译器：Java源码转换为Jvm可运行的class字节码文件，class文件格式将会在第四章详细介绍</li>
+<li>即时编译器：Jvm运行过程中实时将Jvm指令翻译为特定CPU的运行指令</li>
+</ul>
+<p>第三章中即时编译只是略提，重点阐述源码到Jvm指令的转换，本文也是以此展开。使用JDK自带的工具javap可以实现对class文件的查看，一般可以通过javap -c &lt;class文件名&gt; 或 javap -v &lt;class文件名&gt;获取源码编译后的内容，具体内容格式在第四章。此处只解读在方法域中得到jvm指令。指令格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;index&gt; &lt;opcode&gt; [ &lt;operand1&gt; [ &lt;operand2&gt;... ]] [&lt;comment&gt;]</span><br></pre></td></tr></table></figure>
+
+<p>可以在方法的Code区域中得到类似以上格式，index 表示在方法域中的索引值或是偏移量。opcode代表处理指令，根据第七章的表格分类可分为：Constants、Loads、Stores、Stack、Math、Conversions、Comparisons、References、Control、Extended以及Reserved。comment表示注释，一部分由javap工具生成，其余为编程人员编写。</p>
+<h2 id="从指令看基础操作"><a href="#从指令看基础操作" class="headerlink" title="从指令看基础操作"></a>从指令看基础操作</h2><p>Jvm是面向栈操作的，因此会经常用到指令表中的Loads、Stores、Stack这类操作进行出栈入栈，Math、Conversions、Comparisons这类指令进行栈值的运算、比较或是转换。这里整合了第三章2至5小结的内容，包含数据常量、局部变量、控制结构、算术处理、以及常量池访问。Java源码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> a = <span class="number">100L</span>;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的jvm指令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public static void <span class="built_in">test</span>();</span><br><span class="line">  Code:</span><br><span class="line">     0: ldc2_w        <span class="comment">#24                 // long 100l</span></span><br><span class="line">     3: lstore_0</span><br><span class="line">     4: iconst_0</span><br><span class="line">     5: istore_2</span><br><span class="line">     6: goto          12</span><br><span class="line">     9: iinc          2, 1</span><br><span class="line">    12: iload_2</span><br><span class="line">    13: bipush        100</span><br><span class="line">    15: if_icmplt     9</span><br><span class="line">    18: <span class="built_in">return</span></span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          4      15     0     a   J</span><br><span class="line">          6      13     2     i   I</span><br></pre></td></tr></table></figure>
+
+<p>下面我们由上面的例子来分析，LocalVariableTable方法的局部变量表，Slot表示位置istore_2、iload_2中的2对应的即局部变量表中的i，类似的lstore_0中的0即为a。但iconst_0表示数据常量0，意为将0压入栈与bipush 0等价，不过iconst_0更加高效简洁，可以有效降低class文件的大小。而istore_2则是将栈内是数据取出存储至局部变量i，goto至第12处，此时压入局部变量i进栈，之后压入100进栈，在之后if_icmplt比较压入栈的i与100进行比较，若是i&lt;100则继续进如第9处，此处iinc表示对序号为2的局部变量也就是i进行加1操作，之后继续压i和100入栈比较，直到i等于100的时候进入14处返回。可以看到在0处有#24，这就是代表访问常量池中的序号24的值，此处有注释这个#24表示的是100 long类型。</p>
+<h2 id="从指令看方法调用"><a href="#从指令看方法调用" class="headerlink" title="从指令看方法调用"></a>从指令看方法调用</h2><p>这部分包含第三章的6、7小结内容，将会通过一个例子来介绍参数的传递以及方法的调用。Java源码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add1</span><span class="params">(Integer a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    add(a, b);</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的jvm指令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public static int add(int, int);</span><br><span class="line">  Code:</span><br><span class="line">       0: iload_0</span><br><span class="line">       1: iload_1</span><br><span class="line">       2: iadd</span><br><span class="line">       3: ireturn</span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          0       4     0     a   I</span><br><span class="line">          0       4     1     b   I</span><br><span class="line">public int add1(java.lang.Integer, int);</span><br><span class="line">  Code:</span><br><span class="line">       0: aload_1</span><br><span class="line">       1: invokevirtual <span class="comment">#25                 // Method java/lang/Integer.intValue:()I</span></span><br><span class="line">       4: iload_2</span><br><span class="line">       5: invokestatic  <span class="comment">#31                 // Method add:(II)I</span></span><br><span class="line">       8: pop</span><br><span class="line">       9: aload_1</span><br><span class="line">      10: invokevirtual <span class="comment">#25                 // Method java/lang/Integer.intValue:()I</span></span><br><span class="line">      13: iload_2</span><br><span class="line">      14: iadd</span><br><span class="line">      15: ireturn</span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          0      16     0  this   Lcom/toss/vertx/Test;</span><br><span class="line">          0      16     1     a   Ljava/lang/Integer;</span><br><span class="line">          0      16     2     b   I</span><br></pre></td></tr></table></figure>
+
+<p>这里有两个不同的方法，一是静态方法，一是类型实例化后调用。add这个静态方法，在索引0、1处将参数的值压入栈，经过iadd计算得出结果保留在栈中，再由ireturn弹出结果。再看add1这个方法，注意：所有的实例方法的第一个局部参数永远是实例本身，不像静态方法那样局部变量后缀是从0开始，而是由1开始。add方法参数均为基本int类型，而add1中a则是包装类型Integer，所以索引1处调用了Integer的intValue将其拆箱为int类型，然后压入b进栈，调用add方法得到结果，之后由于没有变量接收结果，因此直接pop出结果清空栈。最后的a + b也是如此，Integer类型与int类型相加也要转为int类型。这里可以看到#25、#31，这些代表Jvm在处理时访问了常量池。#25代表了实例调用了intValue方法；#31则代表了静态方法add。</p>
+<h2 id="从指令看引用类型"><a href="#从指令看引用类型" class="headerlink" title="从指令看引用类型"></a>从指令看引用类型</h2><p>对象、数组都是引用类型。那么这些引用类型是如何初始化的。创建引用类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">newObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Object object = <span class="keyword">new</span> Object();</span><br><span class="line">    Object[] objects = <span class="keyword">new</span> Object[<span class="number">10</span>];</span><br><span class="line">    objects[<span class="number">0</span>] = object;</span><br><span class="line">    <span class="keyword">int</span>[] ints = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];</span><br><span class="line">    ints[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的jvm指令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public void newObject();</span><br><span class="line">  Code:</span><br><span class="line">       0: new           <span class="comment">#3                  // class java/lang/Object</span></span><br><span class="line">       3: dup</span><br><span class="line">       4: invokespecial <span class="comment">#8                  // Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       7: astore_1</span><br><span class="line">       8: bipush        10</span><br><span class="line">      10: anewarray     <span class="comment">#3                  // class java/lang/Object</span></span><br><span class="line">      13: astore_2</span><br><span class="line">      14: aload_2</span><br><span class="line">      15: iconst_0</span><br><span class="line">      16: aload_1</span><br><span class="line">      17: aastore</span><br><span class="line">      18: bipush        10</span><br><span class="line">      20: newarray       int</span><br><span class="line">      22: astore_3</span><br><span class="line">      23: aload_3</span><br><span class="line">      24: iconst_0</span><br><span class="line">      25: iconst_1</span><br><span class="line">      26: iastore</span><br><span class="line">      27: <span class="built_in">return</span></span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          0      28     0  this   Lcom/toss/vertx/Test;</span><br><span class="line">          8      20     1 object   Ljava/lang/Object;</span><br><span class="line">         14      14     2 objects   [Ljava/lang/Object;</span><br><span class="line">         23       5     3  ints   [I</span><br></pre></td></tr></table></figure>
+
+<p>先看看单个对象的初始化，其中的new引用了常量池的类，dup将class入栈，invokespecial意为调用了相关的特殊方法此处为构造方法，对于任意类的构造方法其方法在调用时隐含名都是&lt;init&gt;，最后出栈保存在局部变量1中也就是变量名为object。而对于对象类型的数组构造时先将数组的大小入栈，再将对象的类型入栈组装，最后将数组类型出栈保存在objects中。那么数组是如何操作的？指令14至17行先将数组入栈再将要操作的数组下标入栈，在将对应要保存的数组元素入栈，最后保存完毕。</p>
+<h2 id="从指令看异常处理"><a href="#从指令看异常处理" class="headerlink" title="从指令看异常处理"></a>从指令看异常处理</h2><p>异常处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">exception</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Object result = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        result = <span class="keyword">new</span> Object();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IllegalArgumentException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的jvm</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">public java.lang.Object exception();</span><br><span class="line">  Code:</span><br><span class="line">       0: aconst_null</span><br><span class="line">       1: astore_1</span><br><span class="line">       2: new           <span class="comment">#3                  // class java/lang/Object</span></span><br><span class="line">       5: dup</span><br><span class="line">       6: invokespecial <span class="comment">#8                  // Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       9: astore_1</span><br><span class="line">      10: goto          36</span><br><span class="line">      13: astore_2</span><br><span class="line">      14: aload_2</span><br><span class="line">      15: invokevirtual <span class="comment">#21                 // Method java/lang/IllegalArgumentException.printStackTrace:()V</span></span><br><span class="line">      18: getstatic     <span class="comment">#26                 // Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      21: invokevirtual <span class="comment">#32                 // Method java/io/PrintStream.println:()V</span></span><br><span class="line">      24: goto          42</span><br><span class="line">      27: astore_3</span><br><span class="line">      28: getstatic     <span class="comment">#26                 // Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      31: invokevirtual <span class="comment">#32                 // Method java/io/PrintStream.println:()V</span></span><br><span class="line">      34: aload_3</span><br><span class="line">      35: athrow</span><br><span class="line">      36: getstatic     <span class="comment">#26                 // Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      39: invokevirtual <span class="comment">#32                 // Method java/io/PrintStream.println:()V</span></span><br><span class="line">      42: aload_1</span><br><span class="line">      43: areturn</span><br><span class="line">    Exception table:</span><br><span class="line">       from    to  target <span class="built_in">type</span></span><br><span class="line">           2    10    13   Class java/lang/IllegalArgumentException</span><br><span class="line">           2    18    27   any</span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          0      44     0  this   Lcom/toss/vertx/Test;</span><br><span class="line">          2      42     1 result   Ljava/lang/Object;</span><br><span class="line">         14       4     2     e   Ljava/lang/IllegalArgumentException;</span><br></pre></td></tr></table></figure>
+
+<p>这个例子中可以看到此处对应的三条不同执行路线。正常执行0-10，36-43 。IllegalArgumentException异常捕获2-10，异常处理13-24，结果返回42-43 。未知异常捕获2-18，异常处理27-35。这在里会看到多了一个Exception table，这个异常表记录了当前函数有可能出现的异常。from to 表示异常的监控指令区域，每当异常出现时都会有一个局部变量来储存，位于13的IllegalArgumentException异常以及位于27的any异常。可以看到在未知异常的处理时最后时将异常读取抛出。</p>
+<h2 id="从指令看synchronized"><a href="#从指令看synchronized" class="headerlink" title="从指令看synchronized"></a>从指令看synchronized</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">exception</span><span class="params">(Test test)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (test) &#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">exception</span><span class="params">(com.toss.vertx.Test)</span></span>;</span><br><span class="line">  flags: ACC_PUBLIC, ACC_SYNCHRONIZED</span><br><span class="line">  Code:</span><br><span class="line">    stack=<span class="number">2</span>, locals=<span class="number">3</span>, args_size=<span class="number">2</span></span><br><span class="line">       <span class="number">0</span>: aload_1</span><br><span class="line">       <span class="number">1</span>: dup</span><br><span class="line">       <span class="number">2</span>: astore_2</span><br><span class="line">       <span class="number">3</span>: monitorenter</span><br><span class="line">       <span class="number">4</span>: getstatic     #<span class="number">24</span>                 <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">7</span>: invokevirtual #<span class="number">30</span>                 <span class="comment">// Method java/io/PrintStream.println:()V</span></span><br><span class="line">      <span class="number">10</span>: aload_2</span><br><span class="line">      <span class="number">11</span>: monitorexit</span><br><span class="line">      <span class="number">12</span>: goto          <span class="number">18</span></span><br><span class="line">      <span class="number">15</span>: aload_2</span><br><span class="line">      <span class="number">16</span>: monitorexit</span><br><span class="line">      <span class="number">17</span>: athrow</span><br><span class="line">      <span class="number">18</span>: <span class="keyword">return</span></span><br><span class="line">    Exception table:</span><br><span class="line">       from    to  target type</span><br><span class="line">           <span class="number">4</span>    <span class="number">12</span>    <span class="number">15</span>   any</span><br><span class="line">          <span class="number">15</span>    <span class="number">17</span>    <span class="number">15</span>   any</span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          <span class="number">0</span>      <span class="number">19</span>     <span class="number">0</span>  <span class="keyword">this</span>   Lcom/toss/vertx/Test;</span><br><span class="line">          <span class="number">0</span>      <span class="number">19</span>     <span class="number">1</span>  test   Lcom/toss/vertx/Test;</span><br></pre></td></tr></table></figure>
+
+<p>同步关键字的处理：同步块是由monitorenter和monitorexit指令显示的处理，而用synchronized修饰的方法则会在flags中加上ACC_SYNCHRONIZED来进行隐式处理。这两个指令的意为监控的进入以及监控的退出。其中无论结果是正常退出还是异常退出，可以看到在同步块中出现了两处异常捕获均是为了确保monitorenter和monitorexit成对的出现。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>这篇文章我拖了很久，我希望都能覆盖到但是后来发现不现实，只能算是给需要的人带来一些启发，希望真正有兴趣的人可以直接前往官网学习，相信必定会收获不少。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Jvm/" rel="tag"># Jvm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/06/23/2018/20180623/" rel="prev" title="Java值传递">
+      <i class="fa fa-chevron-left"></i> Java值传递
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/07/24/2018/20180724/" rel="next" title="Jvm规范之字节码文件格式">
+      Jvm规范之字节码文件格式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Jvm%E8%A7%84%E8%8C%83%E5%86%85%E5%AE%B9"><span class="nav-number">1.</span> <span class="nav-text">Jvm规范内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Jvm%E6%8C%87%E4%BB%A4%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">Jvm指令的基本格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8C%87%E4%BB%A4%E7%9C%8B%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">从指令看基础操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8C%87%E4%BB%A4%E7%9C%8B%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">从指令看方法调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8C%87%E4%BB%A4%E7%9C%8B%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">从指令看引用类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8C%87%E4%BB%A4%E7%9C%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="nav-number">6.</span> <span class="nav-text">从指令看异常处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8C%87%E4%BB%A4%E7%9C%8Bsynchronized"><span class="nav-number">7.</span> <span class="nav-text">从指令看synchronized</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">8.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-fa fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

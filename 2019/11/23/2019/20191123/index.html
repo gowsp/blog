@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wuzk.ink","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="日常工作中有时编写的并不是持续运行的服务而是一些一次性处理脚本，这时就可以使用Spring项目中的Spring Shell，顾名思义这是个类似Shell脚本的存在，可以用来快速开发Java的控制台程序。本文将做一些简单的介绍，推荐去Spring Shell的官方文档处学习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Shell">
+<meta property="og:url" content="https://www.wuzk.ink/2019/11/23/2019/20191123/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="日常工作中有时编写的并不是持续运行的服务而是一些一次性处理脚本，这时就可以使用Spring项目中的Spring Shell，顾名思义这是个类似Shell脚本的存在，可以用来快速开发Java的控制台程序。本文将做一些简单的介绍，推荐去Spring Shell的官方文档处学习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-11-23T00:00:00.000Z">
+<meta property="article:modified_time" content="2019-12-01T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.wuzk.ink/2019/11/23/2019/20191123/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring Shell | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">醉卧草庐听风雨</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2019/11/23/2019/20191123/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Shell
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-23T00:00:00+00:00">2019-11-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-01 00:00:00" itemprop="dateModified" datetime="2019-12-01T00:00:00+00:00">2019-12-01</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>日常工作中有时编写的并不是持续运行的服务而是一些一次性处理脚本，这时就可以使用<a target="_blank" rel="noopener" href="https://spring.io/projects">Spring项目</a>中的<a target="_blank" rel="noopener" href="https://projects.spring.io/spring-shell/">Spring Shell</a>，顾名思义这是个类似Shell脚本的存在，可以用来快速开发Java的控制台程序。本文将做一些简单的介绍，推荐去<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-shell/docs/current/reference/htmlsingle/">Spring Shell的官方文档</a>处学习。</p>
+<span id="more"></span>
+<h2 id="Spring-Shell特性"><a href="#Spring-Shell特性" class="headerlink" title="Spring Shell特性"></a>Spring Shell特性</h2><p>这里直接借用Spring Shell官方文档上的描述，其特性包括以下内容</p>
+<ul>
+<li>简单的基于注解的编程模型，可以自定义命令</li>
+<li>使用Spring Boot作为基础自动配置插件</li>
+<li>TAB命令补全，命令颜色定义，执行脚本文件</li>
+<li>自定义命令提示符，记录输入的历史命令，结果和错误处理</li>
+<li>根据特定条件动态启用命令</li>
+<li>与bean验证API集成，实现对参数的校验</li>
+<li>内置命令，例如：help, exit</li>
+</ul>
+<p>下面将用一个简单的小例子为大家介绍一二，本文相关的源码已上传至<a target="_blank" rel="noopener" href="https://gitee.com/wutianjue/blog_toss/tree/master/spring-shell-demo">码云</a>，有需要的可以对照练习。</p>
+<h2 id="简单小例子"><a href="#简单小例子" class="headerlink" title="简单小例子"></a>简单小例子</h2><h3 id="Maven依赖"><a href="#Maven依赖" class="headerlink" title="Maven依赖"></a>Maven依赖</h3><p>那么就开始领略一下Spring Shell的风采，第一步添加Maven依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring.shell.version</span>&gt;</span>2.0.1.RELEASE<span class="tag">&lt;/<span class="name">spring.shell.version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.2.1.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.shell<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-shell-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.shell.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="main方法引导"><a href="#main方法引导" class="headerlink" title="main方法引导"></a>main方法引导</h3><p>与普通的Spring Boot程序一样，Spring Shell也需要使用编写一个main方法来启动Spring容器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringShellLauncher</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SpringShellLauncher.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="自定义命令"><a href="#自定义命令" class="headerlink" title="自定义命令"></a>自定义命令</h3><p>接着来编写一些自定义的命令，正如官方介绍的那样，使用注解即可</p>
+<ul>
+<li>@ShellComponent：类注解表明该类是一个shell组件</li>
+<li>@ShellMethod：方法注解，标识该方法是一个shell方法</li>
+<li>@ShellMethodAvailability：方法注解<ul>
+<li>在与@ShellMethod联合使用时表示调用前需要通过@ShellMethodAvailability中方法的校验</li>
+<li>单独使用时表示注解中的方法需要调用此方法进行校验</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ShellComponent</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomCmd</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> connected;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 简单的方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ShellMethod(&quot;add&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x + y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 对参数进行验证</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ShellMethod(&quot;connect sever&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">connect</span><span class="params">(<span class="meta">@NotEmpty</span> String ip)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;connect to :&quot;</span> + ip);</span><br><span class="line">        connected = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 需要前置验证且参数需校验</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ShellMethod(&quot;send message&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">chat</span><span class="params">(<span class="meta">@NotEmpty</span> String msg)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;msg :&quot;</span> + msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 对chat方法进行可用性检测</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ShellMethodAvailability(&#123;&quot;chat&quot;&#125;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Availability <span class="title">downloadAvailability</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> connected</span><br><span class="line">                ? Availability.available()</span><br><span class="line">                : Availability.unavailable(<span class="string">&quot;server not connected&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着使用spring-boot-maven-plugin打包出一个jar，输入命令：<code>java -jar &#123;生成的jar&#125;.jar</code>，这时会相应的进入控制台交互页面，输入<code>help</code>可以得到可用的命令列表</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">shell:&gt;<span class="built_in">help</span></span><br><span class="line">AVAILABLE COMMANDS</span><br><span class="line"></span><br><span class="line">Built-In Commands</span><br><span class="line">        clear: Clear the shell screen.</span><br><span class="line">        <span class="built_in">exit</span>, quit: Exit the shell.</span><br><span class="line">        <span class="built_in">help</span>: Display <span class="built_in">help</span> about available commands.</span><br><span class="line">        <span class="built_in">history</span>: Display or save the <span class="built_in">history</span> of previously run commands</span><br><span class="line">        script: Read and execute commands from a file.</span><br><span class="line">        stacktrace: Display the full stacktrace of the last error.</span><br><span class="line"></span><br><span class="line">Custom Cmd</span><br><span class="line">        add: add</span><br><span class="line">      * chat: send message</span><br><span class="line">        connect: connect sever</span><br><span class="line"></span><br><span class="line">Commands marked with (*) are currently unavailable.</span><br><span class="line">Type `<span class="built_in">help</span> &lt;<span class="built_in">command</span>&gt;` to learn more.</span><br></pre></td></tr></table></figure>
+
+<p>可以看到Spring Shell的几个内置命令，这几个命令是每个Spring Shell程序都会包含在内的，和三个自定义的命令，简单的介绍下内置的命令</p>
+<ul>
+<li>clear 清屏</li>
+<li>exit或quit 退出shell控制台</li>
+<li>help 显示帮助和可用的方法</li>
+<li>history 输入的历史命令记录</li>
+<li>script 从文件中读取命令并执行</li>
+<li>stacktrace 显示上次错误的堆栈信息</li>
+</ul>
+<p>这几个内置命令如果觉得用不上的话可以通过<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-shell/docs/current/reference/htmlsingle/#overriding-or-disabling-built-in-commands">官方的操作说明</a>来自行组织，下面输入自定义的命令可以得到如下验证结果</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">shell:&gt;add 1 1</span><br><span class="line">2</span><br><span class="line">shell:&gt;connect chat.cn</span><br><span class="line">connect to :chat.cn</span><br><span class="line">shell:&gt;chat hello</span><br><span class="line">msg :hello</span><br><span class="line">shell:&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到编写的shell程序正常运行了</p>
+<h3 id="批处理模式"><a href="#批处理模式" class="headerlink" title="批处理模式"></a>批处理模式</h3><p>在上面的例子中，Spring Shell是以控制台交互模式运行的，但经运维同事提醒一些脚本由于处理时间较长容易出现ssh断开导致执行失败，不过经过查找文档发现Spring Shell在支持使用脚本文件运行。以这个shell为例，编写一段如下的命令列表run.sh</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add 1 1</span><br><span class="line">connect chat.cn</span><br><span class="line">chat hello</span><br></pre></td></tr></table></figure>
+
+<p>使用时输<code>java -jar &#123;生成的jar&#125;.jar @&#123;run.sh文件的绝对路径或相对路径&#125;</code>，这时就会以非交互模式可以得到相同的运行结果，并且在执行完毕后自动退出。</p>
+<h2 id="扩展Spring-Shell"><a href="#扩展Spring-Shell" class="headerlink" title="扩展Spring Shell"></a>扩展Spring Shell</h2><p>虽然Spring Shell支持按脚本非交互运行，但是有时仅仅是一个命令不想写一个命令列表文件，那么该如何处理，这时就需要定制一下Spring Shell的运行方式了，<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-shell/docs/current/reference/htmlsingle/#_customizing_command_line_options_behavior">文档</a>介绍了关于自定义运行操作，这里参照ScriptShellApplicationRunner来实现CliApplicationRunner</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Order(0)</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CliApplicationRunner</span> <span class="keyword">implements</span> <span class="title">ApplicationRunner</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Shell shell;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Parser parser;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConfigurableEnvironment environment;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CliApplicationRunner</span><span class="params">(Shell shell, Parser parser, ConfigurableEnvironment environment)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.shell = shell;</span><br><span class="line">        <span class="keyword">this</span>.parser = parser;</span><br><span class="line">        <span class="keyword">this</span>.environment = environment;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(ApplicationArguments args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String[] sourceArgs = args.getSourceArgs();</span><br><span class="line">        <span class="comment">// 参数长度为0时启用控制台模式</span></span><br><span class="line">        <span class="keyword">if</span> (sourceArgs.length == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 禁用控制台模式</span></span><br><span class="line">        InteractiveShellApplicationRunner.disable(environment);</span><br><span class="line">        <span class="comment">// 拼接输入的参数</span></span><br><span class="line">        String argStr = StringUtils.arrayToDelimitedString(sourceArgs, <span class="string">&quot; &quot;</span>);</span><br><span class="line">        <span class="comment">// 发送参数给shell执行</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            shell.run(<span class="keyword">new</span> FileInputProvider(<span class="keyword">new</span> StringReader(argStr), parser));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CommandNotFound ex) &#123;</span><br><span class="line">            shell.run(<span class="keyword">new</span> FileInputProvider(<span class="keyword">new</span> StringReader(<span class="string">&quot;help&quot;</span>), parser));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到会检查输入的参数个数，参数个数大于0时禁用控制台交互模式，从而实现<code>java -jar &#123;生成的jar&#125;.jar add 1 1</code>类似这样的单命令模式 </p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>经过这么一番学习之后可以用java实现一些命令行程序，这里需要感谢运维同事的提醒，不然可能就仅仅简单的使用交互模式，而没有挖出后续的批处理模式和自定义行为模式。希望这篇文章可以帮到各位。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"># Spring</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/03/2019/20191103/" rel="prev" title="MyBatis Dynamic SQL入门">
+      <i class="fa fa-chevron-left"></i> MyBatis Dynamic SQL入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/10/2020/20200106/" rel="next" title="基于git提交日志的增量持续集成">
+      基于git提交日志的增量持续集成 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Shell%E7%89%B9%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">Spring Shell特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%B0%8F%E4%BE%8B%E5%AD%90"><span class="nav-number">2.</span> <span class="nav-text">简单小例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Maven%E4%BE%9D%E8%B5%96"><span class="nav-number">2.1.</span> <span class="nav-text">Maven依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#main%E6%96%B9%E6%B3%95%E5%BC%95%E5%AF%BC"><span class="nav-number">2.2.</span> <span class="nav-text">main方法引导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%91%BD%E4%BB%A4"><span class="nav-number">2.3.</span> <span class="nav-text">自定义命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%B9%E5%A4%84%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.4.</span> <span class="nav-text">批处理模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95Spring-Shell"><span class="nav-number">3.</span> <span class="nav-text">扩展Spring Shell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">4.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-fa fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
