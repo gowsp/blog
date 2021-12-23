@@ -22,8 +22,7 @@ jobs:
             ${{ runner.OS }}-npm-cache
       - name: Install Theme
         run: |
-          mkdir themes/next -p
-          curl -s https://api.github.com/repos/theme-next/hexo-theme-next/releases/latest | grep tarball_url | cut -d '"' -f 4 | wget -i - -O- | tar -zx -C themes/next --strip-components=1
+          npm install hexo-theme-next@latest
       - name: Install Dependencies
         run: npm install
       - name: Build
