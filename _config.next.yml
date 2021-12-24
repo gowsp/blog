@@ -17,3 +17,7 @@ github_banner:
   enable: true
   permalink: https://github.com/gowsp
   title: Follow me on GitHub
+
+vendors:
+  internal: unpkg
+  plugins: unpkg
