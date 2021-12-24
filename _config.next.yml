@@ -2,6 +2,13 @@ scheme: Gemini
 avatar:
   url: /images/avatar.png
 
+favicon:
+  small: /images/favicon-16x16.png
+  medium: /images/favicon-32x32.png
+  apple_touch_icon: /images/apple-touch-icon.png
+  safari_pinned_tab: /images/safari-pinned-tab.svg
+  android_manifest: /images/site.webmanifest
+
 social:
   GitHub: https://github.com/gowsp || fab fa-github
   E-Mail: mailto:wutianjue@gmail.com || fa fa-envelope
