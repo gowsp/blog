@@ -21,3 +21,25 @@ github_banner:
 vendors:
   internal: unpkg
   plugins: unpkg
+
+mermaid:
+  enable: true
+
+reading_progress:
+  enable: true
+
+footer:
+  since: 2017
+
+codeblock:
+  theme:
+    light: github-gist
+  copy_button:
+    enable: true
+
+motion:
+  async: true
+
+pace:
+  enable: true
+
