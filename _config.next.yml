@@ -38,7 +38,7 @@ codeblock:
     enable: true
 
 motion:
-  async: true
+  enable: false
 
 pace:
   enable: true
