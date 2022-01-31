@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
 <meta name="description" content="SSH用的比较多，但却没怎么详细的看看相关的文档，这可不是Java开发中的SSH框架，而是我们经常用来连接服务器的加密协议。近日抽空看了看下相关的知识，不看不知道一看吓一跳，SSH的功能可谓强大，本篇将学习了解下SSH的转发功能。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="SSH转发">
@@ -247,7 +247,7 @@
 <h3 id="远程端口转发"><a href="#远程端口转发" class="headerlink" title="远程端口转发"></a>远程端口转发</h3><p>远程端口转发命令如下：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-R [bind_address:]port:host:hostport</span><br><span class="line">-R [bind_address:]port:local_socket</span><br><span class="line">-R remote_socket:host:hostport</span><br><span class="line">-R remote_socket:local_socket</span><br><span class="line">-R [bind_address:]port</span><br></pre></td></tr></table></figure>
 
-<p>远程端口可以帮助开发者将本地的服务放在公网访问，这对开发阶段的调试非常有用。同上此处仅介绍第一条关于端口的使用，其含义为：-R [远程地址]:远程端口:本地地址:本地端口。<strong>注意:仅当启用了服务器的GatewayPorts时才能生效</strong>。可以在/etc /sshd_config中修改GatewayPorts no为GatewayPorts yes来打开。举个简单的例子：本机开发了一个8080的web服务，需要暴露在123.4.5.6公网下调试，这时可以用如下命令：</p>
+<p>远程端口可以帮助开发者将本地的服务放在公网访问，这对开发阶段的调试非常有用。同上此处仅介绍第一条关于端口的使用，其含义为：-R [远程地址]:远程端口:本地地址:本地端口。<strong>注意:仅当启用了服务器的GatewayPorts时才能生效</strong>。可以在&#x2F;etc &#x2F;sshd_config中修改GatewayPorts no为GatewayPorts yes来打开。举个简单的例子：本机开发了一个8080的web服务，需要暴露在123.4.5.6公网下调试，这时可以用如下命令：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -N -L 80:127.0.0.1:8080 root@123.4.5.6</span><br></pre></td></tr></table></figure>
 
 <p>这样在访问<a target="_blank" rel="noopener" href="http://123.4.5.6/">http://123.4.5.6</a>时就会通过ssh连接转发到本地的8080服务了。</p>
@@ -305,7 +305,7 @@
 
 <div class="copyright">
   &copy; 2017 – 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -319,16 +319,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.4/dist/mermaid.min.js","integrity":"sha256-96rwDGMWIQYB0yKGp1sKi1yrjrLPj2oT39IpbCsIrsg="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
 
   
 

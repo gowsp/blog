@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
 <meta name="description" content="oracle之中很多语法都和by有关，虽然意义各不不同，但是我还是想稍加整理下记录下，以增强个人对这方面的认知。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="oracle 之by用法">
@@ -268,7 +268,7 @@
 <p>函数：SYS_CONNECT_BY_PATH(column, char)可以针对层次查询有妙用。它返回一个从根节点到子节点用char连接column值。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 小例子</span><br><span class="line"><span class="keyword">SELECT</span> SYS_CONNECT_BY_PATH(last_name,<span class="string">&#x27;/&#x27;</span>)</span><br><span class="line"><span class="keyword">FROM</span> employees</span><br><span class="line"><span class="keyword">START</span> <span class="keyword">WITH</span> last_name <span class="operator">=</span> <span class="string">&#x27;Kochhar&#x27;</span></span><br><span class="line"><span class="keyword">CONNECT</span> <span class="keyword">BY</span> PRIOR employee_id <span class="operator">=</span> manager_id;</span><br><span class="line">结果:</span><br><span class="line">SYS_CONNECT_BY_PATH(LAST_NAME,<span class="string">&#x27;/&#x27;</span>)</span><br><span class="line"><span class="operator">/</span>Kochhar</span><br><span class="line"><span class="operator">/</span>Kochhar<span class="operator">/</span>Greenberg</span><br><span class="line"><span class="operator">/</span>Kochhar<span class="operator">/</span>Greenberg<span class="operator">/</span>Faviet</span><br><span class="line"><span class="operator">/</span>Kochhar<span class="operator">/</span>Greenberg<span class="operator">/</span>Chen</span><br></pre></td></tr></table></figure>
 
-<p>PRIOR表示上一条记录，以本例来讲 PRIOR employee_id = manager_id 即：上条记录的employee_id是本条记录的manager_id。这个多用两遍就可以非常清楚。</p>
+<p>PRIOR表示上一条记录，以本例来讲 PRIOR employee_id &#x3D; manager_id 即：上条记录的employee_id是本条记录的manager_id。这个多用两遍就可以非常清楚。</p>
 <h2 id="分析之PARTITION-BY，ORDER-BY"><a href="#分析之PARTITION-BY，ORDER-BY" class="headerlink" title="分析之PARTITION BY，ORDER BY"></a>分析之PARTITION BY，ORDER BY</h2><p>PARTITION BY也比较有意思，用于分析函数。常常可以以意想不到的方式解决问题。但目前对于这块了解不多仅仅是用过，在此就不献丑了。</p>
 <h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>对oracle越学习就会越发的感受到它的强大与魅力。目前才疏学浅仍需努力，在层次查询和分析函数上还要多加练习。</p>
 
@@ -315,7 +315,7 @@
 
 <div class="copyright">
   &copy; 2017 – 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -329,16 +329,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.4/dist/mermaid.min.js","integrity":"sha256-96rwDGMWIQYB0yKGp1sKi1yrjrLPj2oT39IpbCsIrsg="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
 
   
 

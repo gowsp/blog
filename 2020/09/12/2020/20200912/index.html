@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
 <meta name="description" content="前段时间参与支援一个SOAP协议任务，唤醒了许久之前的记忆。上次开发WebService大概已是两年多之前了，这次的使用中却是遇到JAXB的问题，其在CXF框架中作为默认的XML序列化和反序列化组件，在输出对象时极易遇到上下文未知的问题，下面就来一探究竟。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JAXB通用结果输出">
@@ -238,7 +238,7 @@
 
 <h2 id="处理方式"><a href="#处理方式" class="headerlink" title="处理方式"></a>处理方式</h2><p>对此问题在网上大多给出的解决方案是使用<code>@XmlSeeAlso(User.class)</code>，这样做没什么问题，但是用起来却颇为繁琐，这意味着以后每次新的返回类都要在这个<code>XmlSeeAlso</code>中追加。能不能简单些呢？先看看这个注解的作用，JAXB的源码非常丰富在源码中是如下介绍</p>
 <blockquote>
-<p>Instructs JAXB to also bind other classes when binding this class.<br>Java makes it impractical/impossible to list all sub-classes of a given class. This often gets in a way of JAXB users, as it JAXB cannot automatically list up the classes that need to be known to JAXBContext.<br>For example, with the following class definitions:<br>  class Animal {}<br>  class Dog extends Animal {}<br>  class Cat extends Animal {}</p>
+<p>Instructs JAXB to also bind other classes when binding this class.<br>Java makes it impractical&#x2F;impossible to list all sub-classes of a given class. This often gets in a way of JAXB users, as it JAXB cannot automatically list up the classes that need to be known to JAXBContext.<br>For example, with the following class definitions:<br>  class Animal {}<br>  class Dog extends Animal {}<br>  class Cat extends Animal {}</p>
 <p>The user would be required to create JAXBContext as JAXBContext.newInstance(Dog.class,Cat.class) (Animal will be automatically picked up since Dog and Cat refers to it.)<br>XmlSeeAlso annotation would allow you to write:<br>  @XmlSeeAlso({Dog.class,Cat.class})<br>  class Animal {}<br>  class Dog extends Animal {}<br>  class Cat extends Animal {}</p>
 <p>This would allow you to do JAXBContext.newInstance(Animal.class). By the help of this annotation, JAXB implementations will be able to correctly bind Dog and Cat</p>
 </blockquote>
@@ -305,7 +305,7 @@
 
 <div class="copyright">
   &copy; 2017 – 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -319,16 +319,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.4/dist/mermaid.min.js","integrity":"sha256-96rwDGMWIQYB0yKGp1sKi1yrjrLPj2oT39IpbCsIrsg="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.8.2/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
 
   
 
