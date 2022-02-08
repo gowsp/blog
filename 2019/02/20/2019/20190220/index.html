@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -21,8 +20,9 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
-<meta name="description" content="前几天在研究跨平台编译时，偶然发现Travis Ci这个持续集成的工具，然后灵光一现想到Hexo应该也可以通过Travis Ci来实现自动处理部署的，在网上找了下还真有这方面的教程，遗憾的是大部分教程只是围绕着github的page来做，对于有VPS主机的人却没有帮助，不过有一篇博文阐述了如何使用Travis Ci将Hexo发布至VPS。这里本人再梳理记录下此次实践的步骤。">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/config.js"></script>
+
+  <meta name="description" content="前几天在研究跨平台编译时，偶然发现Travis Ci这个持续集成的工具，然后灵光一现想到Hexo应该也可以通过Travis Ci来实现自动处理部署的，在网上找了下还真有这方面的教程，遗憾的是大部分教程只是围绕着github的page来做，对于有VPS主机的人却没有帮助，不过有一篇博文阐述了如何使用Travis Ci将Hexo发布至VPS。这里本人再梳理记录下此次实践的步骤。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Travis Ci自动部署Hexo">
 <meta property="og:url" content="https://www.wuzk.ink/2019/02/20/2019/20190220/index.html">
@@ -45,6 +45,7 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Travis Ci自动部署Hexo | 醉卧草庐听风雨</title>
   
+
 
 
 
@@ -126,7 +127,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">62</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -135,7 +136,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -241,10 +242,10 @@
 <li>将加密后的id_rsa.enc文件复制出来放入.travis目录</li>
 </ul>
 <h2 id="配置Travis-Ci"><a href="#配置Travis-Ci" class="headerlink" title="配置Travis Ci"></a>配置Travis Ci</h2><p>在.travis目录下新建ssh_config文件，文件内容如下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host *</span><br><span class="line">    StrictHostKeyChecking no</span><br><span class="line">    IdentityFile ~/.ssh/id_rsa</span><br><span class="line">    IdentitiesOnly yes</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host *</span><br><span class="line">    StrictHostKeyChecking no</span><br><span class="line">    IdentityFile ~/.ssh/id_rsa</span><br><span class="line">    IdentitiesOnly yes</span><br></pre></td></tr></table></figure>
 
 <p>此配置用于避免ssh认证时需要输入yes的步骤，由于本人强迫症总是想用最新的next主题，每次使用时都要留意是否有更新，但在travis中可以免去手动检查，只需要在.travis目录下将自己的next主题配置放入，用于后续集成的使用，这里用的theme_config.yml来保存，接下来便是最重要的一环在工程目录下配置.travis.yml</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">language: node_js</span><br><span class="line">node_js: stable</span><br><span class="line"></span><br><span class="line">branches:</span><br><span class="line">  only:</span><br><span class="line">  - master</span><br><span class="line"></span><br><span class="line">before_install:</span><br><span class="line"><span class="comment">## 替换为刚刚控制台输出的信息，注意：文件读取位置和输出位置与原信息不同</span></span><br><span class="line">- openssl aes-256-cbc -K <span class="variable">$encrypted_xxxxxxx_key</span> -iv <span class="variable">$encrypted_xxxxxxxxxx_iv</span> -<span class="keyword">in</span> .travis/id_rsa.enc -out ~/.ssh/id_rsa -d</span><br><span class="line">- chmod 600 ~/.ssh/id_rsa</span><br><span class="line">- <span class="built_in">eval</span> $(ssh-agent)</span><br><span class="line">- ssh-add ~/.ssh/id_rsa</span><br><span class="line">- cp .travis/ssh_config ~/.ssh/config</span><br><span class="line">- git config --global user.name <span class="string">&#x27;wutianjue&#x27;</span></span><br><span class="line">- git config --global user.email jobjoy@qq.com</span><br><span class="line">- mkdir -p themes/next</span><br><span class="line"><span class="comment">## 下载最新的next主题</span></span><br><span class="line">- curl -s https://api.github.com/repos/theme-next/hexo-theme-next/releases/latest | grep tarball_url | cut -d <span class="string">&#x27;&quot;&#x27;</span> -f 4 | wget -i - -O- | tar -zx -C themes/next --strip-components=1</span><br><span class="line"><span class="comment">## 使用自定义配置覆盖next主题配置</span></span><br><span class="line">- cp .travis/theme_config.yml themes/next/_config.yml</span><br><span class="line"></span><br><span class="line">install:</span><br><span class="line">- npm install</span><br><span class="line">- npm install hexo-cli -g</span><br><span class="line">- npm install hexo-deployer-git --save</span><br><span class="line"></span><br><span class="line">after_success:</span><br><span class="line">- hexo g -d</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">language: node_js</span><br><span class="line">node_js: stable</span><br><span class="line"></span><br><span class="line">branches:</span><br><span class="line">  only:</span><br><span class="line">  - master</span><br><span class="line"></span><br><span class="line">before_install:</span><br><span class="line"><span class="comment">## 替换为刚刚控制台输出的信息，注意：文件读取位置和输出位置与原信息不同</span></span><br><span class="line">- openssl aes-256-cbc -K <span class="variable">$encrypted_xxxxxxx_key</span> -iv <span class="variable">$encrypted_xxxxxxxxxx_iv</span> -<span class="keyword">in</span> .travis/id_rsa.enc -out ~/.ssh/id_rsa -d</span><br><span class="line">- <span class="built_in">chmod</span> 600 ~/.ssh/id_rsa</span><br><span class="line">- <span class="built_in">eval</span> $(ssh-agent)</span><br><span class="line">- ssh-add ~/.ssh/id_rsa</span><br><span class="line">- <span class="built_in">cp</span> .travis/ssh_config ~/.ssh/config</span><br><span class="line">- git config --global user.name <span class="string">&#x27;wutianjue&#x27;</span></span><br><span class="line">- git config --global user.email jobjoy@qq.com</span><br><span class="line">- <span class="built_in">mkdir</span> -p themes/next</span><br><span class="line"><span class="comment">## 下载最新的next主题</span></span><br><span class="line">- curl -s https://api.github.com/repos/theme-next/hexo-theme-next/releases/latest | grep tarball_url | <span class="built_in">cut</span> -d <span class="string">&#x27;&quot;&#x27;</span> -f 4 | wget -i - -O- | tar -zx -C themes/next --strip-components=1</span><br><span class="line"><span class="comment">## 使用自定义配置覆盖next主题配置</span></span><br><span class="line">- <span class="built_in">cp</span> .travis/theme_config.yml themes/next/_config.yml</span><br><span class="line"></span><br><span class="line">install:</span><br><span class="line">- npm install</span><br><span class="line">- npm install hexo-cli -g</span><br><span class="line">- npm install hexo-deployer-git --save</span><br><span class="line"></span><br><span class="line">after_success:</span><br><span class="line">- hexo g -d</span><br></pre></td></tr></table></figure>
 
 <p>这里直接使用了hexo原生的git提交方式，具体配置请查阅<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/deployment.html#Git">官网文档</a>此处不再赘述</p>
 <h2 id="提交验证"><a href="#提交验证" class="headerlink" title="提交验证"></a>提交验证</h2><p>一切工作完成后提交代码至github，登录Travis Ci网站查看构建日志，最后访问对应的网站查看是否发布成功。最后提一句，工欲善其事必先利其器，驾驭优秀的工具可以让我们更快更好更强。</p>
@@ -306,16 +307,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.10/dist/mermaid.min.js","integrity":"sha256-CmZCFVnvol9YL23PfjDflGY5nJwE+Mf/JN+8v+tD/34="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/pace.js"></script>
 
   
 

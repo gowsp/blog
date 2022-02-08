@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -21,8 +20,9 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
-<meta name="description" content="上篇日志介绍了关于Docker的一些粗浅知识，本期将简单的说明下Docker镜像和容器的存储结构，以及优化构建的几种方式。">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/config.js"></script>
+
+  <meta name="description" content="上篇日志介绍了关于Docker的一些粗浅知识，本期将简单的说明下Docker镜像和容器的存储结构，以及优化构建的几种方式。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java项目镜像化之分层构建">
 <meta property="og:url" content="https://www.wuzk.ink/2021/12/25/2021/20211223/index.html">
@@ -49,6 +49,7 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Java项目镜像化之分层构建 | 醉卧草庐听风雨</title>
   
+
 
 
 
@@ -130,7 +131,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">62</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -139,7 +140,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -235,10 +236,10 @@
 <p><img src="https://preview.cloud.189.cn/image/imageAction?param=98F31A1CC81009010B5A1C99D82AD111A2BD53B33F9AB5D6F21865C8B4400284099C49136092C3FFC681783ECBE0E30CE4739604BDE9B8BB86D7EFEC31BF680D57DCD5D25A08A3ECF4C523ECB8EB3DBCAEE959B4A0F4921B8128EABF4DFBAF8E285E6F0CEF6E401E9857BBB68E937FCE"></p>
 <p>每个容器拥有自己的读写层但共用同一个镜像的只读层。分层的镜像设计，使得镜像之间可以复用图层，当我们pull一个image的时，本地其他image已经拉取的图层就可以跳过，加快镜像使用的同时也节约磁盘的占用。在知道这些知识之后我们可以对上篇日志中提到的Dockerfile构建进行优化和改进，对其他分层构建的插件这里也会介绍一二。</p>
 <h2 id="优化构建"><a href="#优化构建" class="headerlink" title="优化构建"></a>优化构建</h2><h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><p>先来回顾之前的Dockerfile</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jdk-alpine</span><br><span class="line">RUN addgroup -S spring &amp;&amp; adduser -S spring -G spring</span><br><span class="line">USER spring:spring</span><br><span class="line">ARG JAR_FILE=target/*.jar</span><br><span class="line">COPY $&#123;JAR_FILE&#125; app.jar</span><br><span class="line">ENTRYPOINT [&quot;java&quot;,&quot;-jar&quot;,&quot;/app.jar&quot;]</span><br></pre></td></tr></table></figure>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jdk-alpine</span><br><span class="line">RUN addgroup -S spring &amp;&amp; adduser -S spring -G spring</span><br><span class="line">USER spring:spring</span><br><span class="line">ARG JAR_FILE=target/*.jar</span><br><span class="line">COPY $&#123;JAR_FILE&#125; app.jar</span><br><span class="line">ENTRYPOINT [&quot;java&quot;,&quot;-jar&quot;,&quot;/app.jar&quot;]</span><br></pre></td></tr></table></figure>
 
 <p>可以看到应用app.jar只有一层，按照<a target="_blank" rel="noopener" href="https://docs.docker.com/get-started/09_image_best/">官方的最佳实践</a>，我们可以进行如下方式的优化</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jre-alpine as builder</span><br><span class="line">WORKDIR application</span><br><span class="line">ARG JAR_FILE=target/*.jar</span><br><span class="line">COPY $&#123;JAR_FILE&#125; application.jar</span><br><span class="line">RUN java -Djarmode=layertools -jar application.jar extract</span><br><span class="line"></span><br><span class="line">FROM openjdk:8-jre-alpine</span><br><span class="line">WORKDIR application</span><br><span class="line"></span><br><span class="line">ENV TZ Asia/Shanghai</span><br><span class="line"># 调整时区</span><br><span class="line">RUN apk add tzdata &amp;&amp; cp /usr/share/zoneinfo/$&#123;TZ&#125; /etc/localtime \</span><br><span class="line">    &amp;&amp; echo $&#123;TZ&#125; &gt; /etc/timezone \</span><br><span class="line">    &amp;&amp; apk del tzdata</span><br><span class="line"></span><br><span class="line">COPY --from=builder application/dependencies/ ./</span><br><span class="line">COPY --from=builder application/spring-boot-loader/ ./</span><br><span class="line">COPY --from=builder application/snapshot-dependencies/ ./</span><br><span class="line">COPY --from=builder application/application/ ./</span><br><span class="line">ENTRYPOINT [&quot;java&quot;, &quot;org.springframework.boot.loader.JarLauncher&quot;]</span><br></pre></td></tr></table></figure>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jre-alpine as builder</span><br><span class="line">WORKDIR application</span><br><span class="line">ARG JAR_FILE=target/*.jar</span><br><span class="line">COPY $&#123;JAR_FILE&#125; application.jar</span><br><span class="line">RUN java -Djarmode=layertools -jar application.jar extract</span><br><span class="line"></span><br><span class="line">FROM openjdk:8-jre-alpine</span><br><span class="line">WORKDIR application</span><br><span class="line"></span><br><span class="line">ENV TZ Asia/Shanghai</span><br><span class="line"># 调整时区</span><br><span class="line">RUN apk add tzdata &amp;&amp; cp /usr/share/zoneinfo/$&#123;TZ&#125; /etc/localtime \</span><br><span class="line">    &amp;&amp; echo $&#123;TZ&#125; &gt; /etc/timezone \</span><br><span class="line">    &amp;&amp; apk del tzdata</span><br><span class="line"></span><br><span class="line">COPY --from=builder application/dependencies/ ./</span><br><span class="line">COPY --from=builder application/spring-boot-loader/ ./</span><br><span class="line">COPY --from=builder application/snapshot-dependencies/ ./</span><br><span class="line">COPY --from=builder application/application/ ./</span><br><span class="line">ENTRYPOINT [&quot;java&quot;, &quot;org.springframework.boot.loader.JarLauncher&quot;]</span><br></pre></td></tr></table></figure>
 
 <p>上述包含了官方的两种最佳实践</p>
 <ul>
@@ -303,6 +304,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2022/01/26/2022/20220126/" rel="next" title="基于websocket的正向代理">
+                  基于websocket的正向代理 <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
@@ -337,16 +341,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.10/dist/mermaid.min.js","integrity":"sha256-CmZCFVnvol9YL23PfjDflGY5nJwE+Mf/JN+8v+tD/34="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/pace.js"></script>
 
   
 

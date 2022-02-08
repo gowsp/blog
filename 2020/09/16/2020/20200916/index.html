@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -21,8 +20,9 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
-<meta name="description" content="现在的Java Web领域已经逐渐分为Servlet技术栈和非Servlet技术栈（目前主要基于Netty），用了许久的Servlet技术栈也是时候整理整理下Servlet的一些注册方式，当然本文内容受限于个人的知识范围，仅罗列出个人目前知道的方式。主要以Servlet组件为例，其他的如Listener和Filter这种类似就不再演示。">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/config.js"></script>
+
+  <meta name="description" content="现在的Java Web领域已经逐渐分为Servlet技术栈和非Servlet技术栈（目前主要基于Netty），用了许久的Servlet技术栈也是时候整理整理下Servlet的一些注册方式，当然本文内容受限于个人的知识范围，仅罗列出个人目前知道的方式。主要以Servlet组件为例，其他的如Listener和Filter这种类似就不再演示。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Servlet组件的注册方式">
 <meta property="og:url" content="https://www.wuzk.ink/2020/09/16/2020/20200916/index.html">
@@ -46,6 +46,7 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Servlet组件的注册方式 | 醉卧草庐听风雨</title>
   
+
 
 
 
@@ -127,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">62</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -136,7 +137,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -230,15 +231,15 @@
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>app<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>contextConfigLocation<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-value</span>&gt;</span><span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">load-on-startup</span>&gt;</span>1<span class="tag">&lt;/<span class="name">load-on-startup</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>app<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/app/*<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="WebServlet"><a href="#WebServlet" class="headerlink" title="@WebServlet"></a>@WebServlet</h2><p>在Servlet 3.0+的环境中可以直接通过注解的方式来定义相关的组件，下面就是一个简单的示例</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@WebServlet(name=&quot;TestServlet&quot;, urlPatterns=&#123;&quot;/path&quot;, &quot;/alt&quot;&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> ... </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@WebServlet(name=&quot;TestServlet&quot;, urlPatterns=&#123;&quot;/path&quot;, &quot;/alt&quot;&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> ... &#123;&#125;</span><br></pre></td></tr></table></figure>
 
 <p>在Spring Boot内嵌容器情况下可以使用@ServletComponentScan注解来直接扫描相关的组件注解，来达到注册的目的。</p>
 <h2 id="WebApplicationInitializer"><a href="#WebApplicationInitializer" class="headerlink" title="WebApplicationInitializer"></a>WebApplicationInitializer</h2><p>在实际使用中大多是结合Spring的生态来用，Servlet 3.0+环境中，可用Spring MVC的WebApplicationInitializer以编程方式配置Servlet，启动时Spring会检测实现类并将其自动用于初始化任何Servlet 3容器。通过抽象实现<code>AbstractDispatcherServletInitializer</code>还可以自定义<code>DispatcherServlet</code>的映射和配置位置。WebApplicationInitializer用来替代或与web.xml结合使用。以下示例注册一个DispatcherServlet：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyWebApplicationInitializer</span> <span class="keyword">implements</span> <span class="title">WebApplicationInitializer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStartup</span><span class="params">(ServletContext container)</span> </span>&#123;</span><br><span class="line">        XmlWebApplicationContext appContext = <span class="keyword">new</span> XmlWebApplicationContext();</span><br><span class="line">        appContext.setConfigLocation(<span class="string">&quot;/WEB-INF/spring/dispatcher-config.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">        ServletRegistration.Dynamic registration = container.addServlet(<span class="string">&quot;dispatcher&quot;</span>, <span class="keyword">new</span> DispatcherServlet(appContext));</span><br><span class="line">        registration.setLoadOnStartup(<span class="number">1</span>);</span><br><span class="line">        registration.addMapping(<span class="string">&quot;/&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyWebApplicationInitializer</span> <span class="keyword">implements</span> <span class="title class_">WebApplicationInitializer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onStartup</span><span class="params">(ServletContext container)</span> &#123;</span><br><span class="line">        <span class="type">XmlWebApplicationContext</span> <span class="variable">appContext</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XmlWebApplicationContext</span>();</span><br><span class="line">        appContext.setConfigLocation(<span class="string">&quot;/WEB-INF/spring/dispatcher-config.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">        ServletRegistration.<span class="type">Dynamic</span> <span class="variable">registration</span> <span class="operator">=</span> container.addServlet(<span class="string">&quot;dispatcher&quot;</span>, <span class="keyword">new</span> <span class="title class_">DispatcherServlet</span>(appContext));</span><br><span class="line">        registration.setLoadOnStartup(<span class="number">1</span>);</span><br><span class="line">        registration.addMapping(<span class="string">&quot;/&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h2 id="ServletContextInitializer"><a href="#ServletContextInitializer" class="headerlink" title="ServletContextInitializer"></a>ServletContextInitializer</h2><p>接下来便是Spring Boot的注册方式了，在Spring Boot中也可以使用编程方式来配置Web组件，这便是ServletContextInitializer，它的作用和WebApplicationInitializer一致，两者不同之处在于ServletContextInitializer的实现类是由SpringServletContainerInitializer来管理运行的，而WebApplicationInitializer的实现类则是交由Servlet容器来管理，简单来讲就是war包部署模式下WebApplicationInitializer起作用，jar包内嵌容器时ServletContextInitializer起作用，两者在特定的条件下才会运行互不影响。由于ServletContextInitializer的配置方式与WebApplicationInitializer类似此处就不再示例演示了。</p>
 <h2 id="ServletRegistrationBean"><a href="#ServletRegistrationBean" class="headerlink" title="ServletRegistrationBean"></a>ServletRegistrationBean</h2><p>在Spring Boot中还支持使用ServletRegistrationBean来注册，使用起来还是比较简单易懂，下面便是一个示例，当然还有很多的参数配置，这里就不再一一展示了。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ServletRegistrationBean <span class="title">registrationBean</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    DispatcherServlet servlet = <span class="keyword">new</span> DispatcherServlet();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ServletRegistrationBean(servlet,<span class="string">&quot;/*&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> ServletRegistrationBean <span class="title function_">registrationBean</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">DispatcherServlet</span> <span class="variable">servlet</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DispatcherServlet</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ServletRegistrationBean</span>(servlet,<span class="string">&quot;/*&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>本次主要介绍了Servlet组件注册的一些小知识，个人感觉还是挺有用的，尤其是WebApplicationInitializer和ServletContextInitializer这两种方式可以帮助我们把项目逐渐过渡至Spring Boot中，在实际实践中中本人就是这么将项目迁移为Spring Boot的，希望能对各位有所启发和帮助。</p>
 
@@ -300,16 +301,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.10/dist/mermaid.min.js","integrity":"sha256-CmZCFVnvol9YL23PfjDflGY5nJwE+Mf/JN+8v+tD/34="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/pace.js"></script>
 
   
 

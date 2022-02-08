@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -21,8 +20,9 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
-<meta name="description" content="正则表达式在文字处理方面是一个利器，经常可以出其不意的以相对简单的方式处理一些看似棘手的问题。但是在平时的工作当中正则表达式只是偶尔用到所以我用这篇文档记录一下相关的使用方法，以免花费不必要的时间去寻找相关资料。">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/config.js"></script>
+
+  <meta name="description" content="正则表达式在文字处理方面是一个利器，经常可以出其不意的以相对简单的方式处理一些看似棘手的问题。但是在平时的工作当中正则表达式只是偶尔用到所以我用这篇文档记录一下相关的使用方法，以免花费不必要的时间去寻找相关资料。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java正则表达式的使用">
 <meta property="og:url" content="https://www.wuzk.ink/2017/09/05/2017/20170905/index.html">
@@ -46,6 +46,7 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Java正则表达式的使用 | 醉卧草庐听风雨</title>
   
+
 
 
 
@@ -127,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">62</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -136,7 +137,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -233,11 +234,11 @@
 </ul>
 <h2 id="正则的转义"><a href="#正则的转义" class="headerlink" title="正则的转义"></a>正则的转义</h2><p>在其他语言中，\\ 表示：* 在正则表达式中插入一个普通的（字面上的）反斜杠，没有任何特殊的意义 <em>。<br>在 Java 中，\\ 表示：</em> 插入一个正则表达式的反斜线，其后的字符具有特殊的意义 *。<br>所以，在其他的语言中，一个反斜杠\就足以具有转义的作用，而在Java中则需要有两个反斜杠才能被解析为其他语言中的转义作用。也可以简单的理解在Java的正则表达式中，两个 \ 代表其他语言中的一个 \，这也就是为什么Java中表示一位数字的正则表达式是 \\d，而表示一个普通的反斜杠是 \\\\。</p>
 <h2 id="Group捕获组的使用"><a href="#Group捕获组的使用" class="headerlink" title="Group捕获组的使用"></a>Group捕获组的使用</h2><p>java捕获组这个概念在特殊的场景下有很大的用处。所以简单的介绍下。捕获组是通过从左至右计算其开括号来编号，例如表达式(A)(B(C))，就有四个组:A、BC、C<br>可以通过调用 matcher 对象的 groupCount 方法来查看表达式有多少个分组。有一个特殊的组（group(0)）代表整个表达式，该组不包括在 groupCount 的返回值中。可以通过matcher的group(i)获取指定组的数据。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String regex = <span class="string">&quot;(\\d+)([ab]+(\\d+))&quot;</span>;</span><br><span class="line">    Pattern pattern = Pattern.compile(regex);</span><br><span class="line">    Matcher matcher = pattern.matcher(<span class="string">&quot;12ab34&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (matcher.find()) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= matcher.groupCount(); i++) &#123;</span><br><span class="line">            System.out.println(matcher.group(i));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">regex</span> <span class="operator">=</span> <span class="string">&quot;(\\d+)([ab]+(\\d+))&quot;</span>;</span><br><span class="line">    <span class="type">Pattern</span> <span class="variable">pattern</span> <span class="operator">=</span> Pattern.compile(regex);</span><br><span class="line">    <span class="type">Matcher</span> <span class="variable">matcher</span> <span class="operator">=</span> pattern.matcher(<span class="string">&quot;12ab34&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (matcher.find()) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= matcher.groupCount(); i++) &#123;</span><br><span class="line">            System.out.println(matcher.group(i));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>上面的例子会输出结果：<br>12<br>ab34<br>34</p>
 <h2 id="matches-和-lookingAt的异同"><a href="#matches-和-lookingAt的异同" class="headerlink" title="matches 和 lookingAt的异同"></a>matches 和 lookingAt的异同</h2><p>两者都用来检查数据是否匹配，不同的是matches是输入文本严格匹配，即：从头到尾都要匹配规则，而lookingAt只检查起始部分是否匹配，不要求输入文本完全匹配。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String regex = <span class="string">&quot;Test&quot;</span>;</span><br><span class="line">    Pattern pattern = Pattern.compile(regex);</span><br><span class="line">    Matcher matcher = pattern.matcher(<span class="string">&quot;TestHello&quot;</span>);</span><br><span class="line">    Matcher lookingAt = pattern.matcher(<span class="string">&quot;HelloTest&quot;</span>);</span><br><span class="line">    System.out.println(matcher.matches());</span><br><span class="line">    System.out.println(matcher.lookingAt());</span><br><span class="line">    System.out.println(lookingAt.lookingAt());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">regex</span> <span class="operator">=</span> <span class="string">&quot;Test&quot;</span>;</span><br><span class="line">    <span class="type">Pattern</span> <span class="variable">pattern</span> <span class="operator">=</span> Pattern.compile(regex);</span><br><span class="line">    <span class="type">Matcher</span> <span class="variable">matcher</span> <span class="operator">=</span> pattern.matcher(<span class="string">&quot;TestHello&quot;</span>);</span><br><span class="line">    <span class="type">Matcher</span> <span class="variable">lookingAt</span> <span class="operator">=</span> pattern.matcher(<span class="string">&quot;HelloTest&quot;</span>);</span><br><span class="line">    System.out.println(matcher.matches());</span><br><span class="line">    System.out.println(matcher.lookingAt());</span><br><span class="line">    System.out.println(lookingAt.lookingAt());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>上面的例子会输出结果：<br>false<br>true<br>false</p>
 <h2 id="相关推荐"><a href="#相关推荐" class="headerlink" title="相关推荐"></a>相关推荐</h2><p>有关一些语法方面的内容推荐阅读<a target="_blank" rel="noopener" href="http://www.runoob.com/regexp/regexp-syntax.html">菜鸟教程相关部分</a>。</p>
@@ -300,16 +301,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.10/dist/mermaid.min.js","integrity":"sha256-CmZCFVnvol9YL23PfjDflGY5nJwE+Mf/JN+8v+tD/34="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/pace.js"></script>
 
   
 

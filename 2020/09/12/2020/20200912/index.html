@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -21,8 +20,9 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/config.js"></script>
-<meta name="description" content="前段时间参与支援一个SOAP协议任务，唤醒了许久之前的记忆。上次开发WebService大概已是两年多之前了，这次的使用中却是遇到JAXB的问题，其在CXF框架中作为默认的XML序列化和反序列化组件，在输出对象时极易遇到上下文未知的问题，下面就来一探究竟。">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/config.js"></script>
+
+  <meta name="description" content="前段时间参与支援一个SOAP协议任务，唤醒了许久之前的记忆。上次开发WebService大概已是两年多之前了，这次的使用中却是遇到JAXB的问题，其在CXF框架中作为默认的XML序列化和反序列化组件，在输出对象时极易遇到上下文未知的问题，下面就来一探究竟。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JAXB通用结果输出">
 <meta property="og:url" content="https://www.wuzk.ink/2020/09/12/2020/20200912/index.html">
@@ -46,6 +46,7 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>JAXB通用结果输出 | 醉卧草庐听风雨</title>
   
+
 
 
 
@@ -127,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">62</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -136,7 +137,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -228,10 +229,10 @@
 
 <h2 id="JAXB简介"><a href="#JAXB简介" class="headerlink" title="JAXB简介"></a>JAXB简介</h2><p>JAXB全称为<code>Java™ Architecture for XML Binding</code>，为Java开发人员提供了一种在XML和Java代码之间进行映射的有效且标准的方式。使开发人员可以不必详细了解XML的规范和设计，编写较少的代码就可以生成标准的XML从而提升生产力。目前网上大多教程只言片语并不全面，不过好在我找到了官方文档地址，可<a target="_blank" rel="noopener" href="https://javaee.github.io/jaxb-v2/doc/user-guide/release-documentation.html">点此访问</a>进行系统而全面的学习使用。而这里则对遇到的问题进行记录和解析。</p>
 <h2 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h2><p>在设计中，通常会设计一个通用的返回对象，用来标识处理的结果和状态，例如下面这个例子</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@XmlRootElement</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XmlResponse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Integer code;</span><br><span class="line">    <span class="keyword">private</span> String msg;</span><br><span class="line">    <span class="keyword">private</span> Object data;</span><br><span class="line"><span class="comment">//省略get set</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@XmlRootElement</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">XmlResponse</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Integer code;</span><br><span class="line">    <span class="keyword">private</span> String msg;</span><br><span class="line">    <span class="keyword">private</span> Object data;</span><br><span class="line"><span class="comment">//省略get set</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>由data作为Object承载通用的返回数据，但是问题也由此而来，在未设置data时一切正常，data一旦设置其他对象返回值就出问题，如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> <span class="keyword">throws</span> JAXBException </span>&#123;</span><br><span class="line">    XmlResponse p = <span class="keyword">new</span> XmlResponse();</span><br><span class="line">    p.setCode(<span class="number">1</span>);</span><br><span class="line">    p.setMsg(<span class="string">&quot;success&quot;</span>);</span><br><span class="line">    p.setData(<span class="keyword">new</span> User());</span><br><span class="line">    JAXBContext context = JAXBContext.newInstance(p.getClass());</span><br><span class="line">    context.createMarshaller().marshal(p, System.out);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">()</span> <span class="keyword">throws</span> JAXBException &#123;</span><br><span class="line">    <span class="type">XmlResponse</span> <span class="variable">p</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XmlResponse</span>();</span><br><span class="line">    p.setCode(<span class="number">1</span>);</span><br><span class="line">    p.setMsg(<span class="string">&quot;success&quot;</span>);</span><br><span class="line">    p.setData(<span class="keyword">new</span> <span class="title class_">User</span>());</span><br><span class="line">    <span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(p.getClass());</span><br><span class="line">    context.createMarshaller().marshal(p, System.out);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>上面这段代码在运行时会抛出如下异常</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">javax.xml.bind.MarshalException</span><br><span class="line"> - with linked exception:</span><br><span class="line">[com.sun.istack.SAXException2: javax.xml.bind.JAXBException: class tk.wuzk.xml.User以及其任何超类对此上下文都是未知的。</span><br><span class="line">javax.xml.bind.JAXBException: class tk.wuzk.xml.User以及其任何超类对此上下文都是未知的。]</span><br></pre></td></tr></table></figure>
@@ -243,10 +244,10 @@
 <p>This would allow you to do JAXBContext.newInstance(Animal.class). By the help of this annotation, JAXB implementations will be able to correctly bind Dog and Cat</p>
 </blockquote>
 <p>这段源码的意思大概是：Animal有两个子类Dog和Cat需要序列化，通常情况下需要用户<code>JAXBContext.newInstance(Dog.class,Cat.class)</code>手动注册，但是使用<code>XmlSeeAlso</code>之后JAXB就会正确绑定相关类。这意味<code>XmlSeeAlso</code>其实是在创建JAXB上下文时帮用户自动注，按提示手动尝试手动注册问题中的<code>User</code>类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">JAXBContext context = JAXBContext.newInstance(p.getClass());</span><br><span class="line">改为</span><br><span class="line">JAXBContext context = JAXBContext.newInstance(p.getClass(), User.class);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(p.getClass());</span><br><span class="line">改为</span><br><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(p.getClass(), User.class);</span><br></pre></td></tr></table></figure>
 
 <p>执行之后发现没有任何问题，说明类正确被加载JAXB的上下文中就不会出现问题，那么如何自动注册相关类呢？在<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/data-access.html#oxm-jaxb">Spring官方文档</a>的JAXB章节中已经为我们提供了一个解决方案。即使用<code>org.springframework.oxm.jaxb.Jaxb2Marshaller</code>进行处理，其位于<code>spring-oxm</code>的依赖中，特别优秀的一点便是支持配置<code>packagesToScan</code>实现类的自动装载JAXB上下文。其核心代码如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> JAXBContext <span class="title">createJaxbContextFromPackages</span><span class="params">(String... packagesToScan)</span> <span class="keyword">throws</span> JAXBException </span>&#123;</span><br><span class="line">	ClassPathJaxb2TypeScanner scanner = <span class="keyword">new</span> ClassPathJaxb2TypeScanner(<span class="keyword">this</span>.beanClassLoader, packagesToScan);</span><br><span class="line">	Class&lt;?&gt;[] jaxb2Classes = scanner.scanPackages();</span><br><span class="line">	<span class="keyword">this</span>.classesToBeBound = jaxb2Classes;</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.jaxbContextProperties != <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> JAXBContext.newInstance(jaxb2Classes, <span class="keyword">this</span>.jaxbContextProperties);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> JAXBContext.newInstance(jaxb2Classes);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> JAXBContext <span class="title function_">createJaxbContextFromPackages</span><span class="params">(String... packagesToScan)</span> <span class="keyword">throws</span> JAXBException &#123;</span><br><span class="line">	<span class="type">ClassPathJaxb2TypeScanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassPathJaxb2TypeScanner</span>(<span class="built_in">this</span>.beanClassLoader, packagesToScan);</span><br><span class="line">	Class&lt;?&gt;[] jaxb2Classes = scanner.scanPackages();</span><br><span class="line">	<span class="built_in">this</span>.classesToBeBound = jaxb2Classes;</span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">this</span>.jaxbContextProperties != <span class="literal">null</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> JAXBContext.newInstance(jaxb2Classes, <span class="built_in">this</span>.jaxbContextProperties);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> JAXBContext.newInstance(jaxb2Classes);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p><code>ClassPathJaxb2TypeScanner</code>可以扫描被JAXB注解的类，以下JAXB注解的类皆会被扫描，有兴趣的同学可以直接看扫描的实现，此处不再说明</p>
 <ul>
@@ -319,16 +320,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.8/dist/mermaid.min.js","integrity":"sha256-QmSAc2kIaUjleIJ46X7qPW2zrpCbXlMz3YIGgWpQ1Jo="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.13.10/dist/mermaid.min.js","integrity":"sha256-CmZCFVnvol9YL23PfjDflGY5nJwE+Mf/JN+8v+tD/34="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.9.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.10.0/source/js/third-party/pace.js"></script>
 
   
 
