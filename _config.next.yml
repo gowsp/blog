@@ -32,8 +32,6 @@ footer:
   since: 2017
 
 codeblock:
-  theme:
-    light: github-gist
   copy_button:
     enable: true
 
