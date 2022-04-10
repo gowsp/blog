@@ -239,7 +239,30 @@
 <li>cwspc作为服务的使用方请求wsps，请求匹配已注册的路由进行数据交互</li>
 <li>wsps作为服务桥梁将两条websocket的流量进行透传</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">server--&gt;swspc:互通</span><br><span class="line">swspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wsps-&gt;&gt;swspc:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">server--&gt;wsps:注册完成</span><br><span class="line">cwspc--&gt;client:监听</span><br><span class="line">client-&gt;&gt;+cwspc:连接请求</span><br><span class="line">cwspc-&gt;&gt;+wsps:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wsps-&gt;&gt;+swspc:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">swspc-&gt;&gt;+server:请求连接</span><br><span class="line">server-&gt;&gt;-swspc:连接结果</span><br><span class="line">swspc-&gt;&gt;-wsps:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">wsps-&gt;&gt;-cwspc:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">cwspc-&gt;&gt;-client:连接结果</span><br><span class="line">client--&gt;server:连接建立</span><br><span class="line">client-&gt;&gt;+cwspc:数据请求</span><br><span class="line">cwspc-&gt;&gt;+wsps:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wsps-&gt;&gt;+swspc:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">swspc-&gt;&gt;+server:数据请求</span><br><span class="line">server-&gt;&gt;-swspc:数据响应</span><br><span class="line">swspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wsps-&gt;&gt;-cwspc:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">cwspc-&gt;&gt;-client:数据响应</span><br><span class="line">client--&gt;server:连接建立</span><br></pre></td></tr></table></figure>
+<pre><code class="highlight mermaid">sequenceDiagram
+server--&gt;swspc:互通
+swspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;
+wsps-&gt;&gt;swspc:WspMessage&#123;RESPOND:WspResponse&#125;
+server--&gt;wsps:注册完成
+cwspc--&gt;client:监听
+client-&gt;&gt;+cwspc:连接请求
+cwspc-&gt;&gt;+wsps:WspMessage&#123;CONNECT:WspRequest&#125;
+wsps-&gt;&gt;+swspc:WspMessage&#123;CONNECT:WspRequest&#125;
+swspc-&gt;&gt;+server:请求连接
+server-&gt;&gt;-swspc:连接结果
+swspc-&gt;&gt;-wsps:WspMessage&#123;RESPOND:WspResponse&#125;
+wsps-&gt;&gt;-cwspc:WspMessage&#123;RESPOND:WspResponse&#125;
+cwspc-&gt;&gt;-client:连接结果
+client--&gt;server:连接建立
+client-&gt;&gt;+cwspc:数据请求
+cwspc-&gt;&gt;+wsps:WspMessage&#123;cmd:TRANSFER&#125;
+wsps-&gt;&gt;+swspc:WspMessage&#123;cmd:TRANSFER&#125;
+swspc-&gt;&gt;+server:数据请求
+server-&gt;&gt;-swspc:数据响应
+swspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;
+wsps-&gt;&gt;-cwspc:WspMessage&#123;cmd:TRANSFER&#125;
+cwspc-&gt;&gt;-client:数据响应
+client--&gt;server:连接建立</code></pre>
 
 <h3 id="注册路由"><a href="#注册路由" class="headerlink" title="注册路由"></a>注册路由</h3><p>在交互流程中，需要一个全局路由信息sync.Map记录连接，key是连接标识，value是websocket连接，当客户机连接时这样就可以实现两条websocket的通讯。其配置格式：protocols:&#x2F;&#x2F;channel[:password]@[bind_address]:port</p>
 <ul>

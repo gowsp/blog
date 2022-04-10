@@ -240,7 +240,15 @@
 <span id="more"></span>
 
 <h2 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h2><p>与正向代理相对的是反向代理，那么什么反向代理呢？反向代理作为服务器端代理，其接收客户端的请求，然后将请求转发给目标服务器，再将目标服务器的响应返回给客户端，这过程中客户端对反向代理没有感知。而正向代理则是客户端明确知道使用了代理并通过代理协议进行了连接和数据传输。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">client-&gt;&gt;+reverse proxy:请求连接</span><br><span class="line">reverse proxy-&gt;&gt;+server:打开目标服务器连接</span><br><span class="line">server-&gt;&gt;+reverse proxy:连接结果</span><br><span class="line">reverse proxy-&gt;&gt;+client:连接结果</span><br><span class="line">client-&gt;&gt;+reverse proxy:传输数据</span><br><span class="line">reverse proxy-&gt;&gt;+server:传输数据</span><br><span class="line">server-&gt;&gt;+reverse proxy:传输数据</span><br><span class="line">reverse proxy-&gt;&gt;+client:传输数据</span><br></pre></td></tr></table></figure>
+<pre><code class="highlight mermaid">sequenceDiagram
+client-&gt;&gt;+reverse proxy:请求连接
+reverse proxy-&gt;&gt;+server:打开目标服务器连接
+server-&gt;&gt;+reverse proxy:连接结果
+reverse proxy-&gt;&gt;+client:连接结果
+client-&gt;&gt;+reverse proxy:传输数据
+reverse proxy-&gt;&gt;+server:传输数据
+server-&gt;&gt;+reverse proxy:传输数据
+reverse proxy-&gt;&gt;+client:传输数据</code></pre>
 
 <h2 id="设计目标"><a href="#设计目标" class="headerlink" title="设计目标"></a>设计目标</h2><p>由于websocket与http协议天然的兼容性，可以在websocket的web服务上动态注册http服务以达成以下目的：</p>
 <ul>
@@ -253,7 +261,25 @@
 <li>wspc 注册本地的http或tcp服务至wsps，负责接收来自wsps的请求，并将请求转发给目标服务器</li>
 </ul>
 <p>交互示意图如下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">server--&gt;wspc:互通</span><br><span class="line">wspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wsps-&gt;&gt;wspc:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">server--&gt;wsps:注册完成</span><br><span class="line">client-&gt;&gt;wsps:http或websocket请求</span><br><span class="line">wsps-&gt;&gt;wspc:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wspc-&gt;&gt;+server:请求连接</span><br><span class="line">server-&gt;&gt;-wspc:连接结果</span><br><span class="line">wspc-&gt;&gt;wsps:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">wsps-&gt;&gt;client:连接结果</span><br><span class="line">client--&gt;server:连接建立</span><br><span class="line">client-&gt;&gt;+wsps:数据请求</span><br><span class="line">wsps-&gt;&gt;+wspc:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wspc-&gt;&gt;+server:数据请求</span><br><span class="line">server-&gt;&gt;-wspc:数据响应</span><br><span class="line">wspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wsps-&gt;&gt;-client:数据响应</span><br><span class="line">client--&gt;server:连接建立</span><br></pre></td></tr></table></figure>
+<pre><code class="highlight mermaid">sequenceDiagram
+server--&gt;wspc:互通
+wspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;
+wsps-&gt;&gt;wspc:WspMessage&#123;RESPOND:WspResponse&#125;
+server--&gt;wsps:注册完成
+client-&gt;&gt;wsps:http或websocket请求
+wsps-&gt;&gt;wspc:WspMessage&#123;CONNECT:WspRequest&#125;
+wspc-&gt;&gt;+server:请求连接
+server-&gt;&gt;-wspc:连接结果
+wspc-&gt;&gt;wsps:WspMessage&#123;RESPOND:WspResponse&#125;
+wsps-&gt;&gt;client:连接结果
+client--&gt;server:连接建立
+client-&gt;&gt;+wsps:数据请求
+wsps-&gt;&gt;+wspc:WspMessage&#123;cmd:TRANSFER&#125;
+wspc-&gt;&gt;+server:数据请求
+server-&gt;&gt;-wspc:数据响应
+wspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;
+wsps-&gt;&gt;-client:数据响应
+client--&gt;server:连接建立</code></pre>
 
 <h3 id="注册路由"><a href="#注册路由" class="headerlink" title="注册路由"></a>注册路由</h3><p>关于http路由的注册这里设计了两种方式，假定wsps所在域名为<code>wsps.com</code>：</p>
 <ul>
