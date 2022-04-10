@@ -16,11 +16,11 @@
 
 
 
-<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" integrity="sha256-jTIdiMuX/e3DGJUGwl3pKSxuc6YOuqtJYkM0bGQESA4=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.11.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/config.js"></script>
 
     <meta name="description" content="继上次介绍wsp正向代理之后，本节来介绍下反向代理的相关部分，它可以实现本地http服务的公网暴露方便对接调试，也支持将tcp服务以websocket方式暴露，以支持在浏览器上进行访问，如noVnc。">
 <meta property="og:type" content="article">
@@ -198,7 +198,7 @@
       <meta itemprop="name" content="醉卧草庐听风雨">
       <meta itemprop="description" content="以不会为借口，你将一无所获">
     </span>
-    
+
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
       <meta itemprop="name" content="基于websocket的反向代理 | 醉卧草庐听风雨">
       <meta itemprop="description" content="">
@@ -240,17 +240,7 @@
 <span id="more"></span>
 
 <h2 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h2><p>与正向代理相对的是反向代理，那么什么反向代理呢？反向代理作为服务器端代理，其接收客户端的请求，然后将请求转发给目标服务器，再将目标服务器的响应返回给客户端，这过程中客户端对反向代理没有感知。而正向代理则是客户端明确知道使用了代理并通过代理协议进行了连接和数据传输。</p>
-<pre class="mermaid">
-sequenceDiagram
-client-&gt;&gt;+reverse proxy:请求连接
-reverse proxy-&gt;&gt;+server:打开目标服务器连接
-server-&gt;&gt;+reverse proxy:连接结果
-reverse proxy-&gt;&gt;+client:连接结果
-client-&gt;&gt;+reverse proxy:传输数据
-reverse proxy-&gt;&gt;+server:传输数据
-server-&gt;&gt;+reverse proxy:传输数据
-reverse proxy-&gt;&gt;+client:传输数据
-</pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">client-&gt;&gt;+reverse proxy:请求连接</span><br><span class="line">reverse proxy-&gt;&gt;+server:打开目标服务器连接</span><br><span class="line">server-&gt;&gt;+reverse proxy:连接结果</span><br><span class="line">reverse proxy-&gt;&gt;+client:连接结果</span><br><span class="line">client-&gt;&gt;+reverse proxy:传输数据</span><br><span class="line">reverse proxy-&gt;&gt;+server:传输数据</span><br><span class="line">server-&gt;&gt;+reverse proxy:传输数据</span><br><span class="line">reverse proxy-&gt;&gt;+client:传输数据</span><br></pre></td></tr></table></figure>
 
 <h2 id="设计目标"><a href="#设计目标" class="headerlink" title="设计目标"></a>设计目标</h2><p>由于websocket与http协议天然的兼容性，可以在websocket的web服务上动态注册http服务以达成以下目的：</p>
 <ul>
@@ -263,27 +253,7 @@ reverse proxy-&gt;&gt;+client:传输数据
 <li>wspc 注册本地的http或tcp服务至wsps，负责接收来自wsps的请求，并将请求转发给目标服务器</li>
 </ul>
 <p>交互示意图如下</p>
-<pre class="mermaid">
-sequenceDiagram
-server--&gt;wspc:互通
-wspc-&gt;&gt;wsps:WspMessage{CONNECT:WspRequest}
-wsps-&gt;&gt;wspc:WspMessage{RESPOND:WspResponse}
-server--&gt;wsps:注册完成
-client-&gt;&gt;wsps:http或websocket请求
-wsps-&gt;&gt;wspc:WspMessage{CONNECT:WspRequest}
-wspc-&gt;&gt;+server:请求连接
-server-&gt;&gt;-wspc:连接结果
-wspc-&gt;&gt;wsps:WspMessage{RESPOND:WspResponse}
-wsps-&gt;&gt;client:连接结果
-client--&gt;server:连接建立
-client-&gt;&gt;+wsps:数据请求
-wsps-&gt;&gt;+wspc:WspMessage{cmd:TRANSFER}
-wspc-&gt;&gt;+server:数据请求
-server-&gt;&gt;-wspc:数据响应
-wspc-&gt;&gt;-wsps:WspMessage{cmd:TRANSFER}
-wsps-&gt;&gt;-client:数据响应
-client--&gt;server:连接建立
-</pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">server--&gt;wspc:互通</span><br><span class="line">wspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wsps-&gt;&gt;wspc:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">server--&gt;wsps:注册完成</span><br><span class="line">client-&gt;&gt;wsps:http或websocket请求</span><br><span class="line">wsps-&gt;&gt;wspc:WspMessage&#123;CONNECT:WspRequest&#125;</span><br><span class="line">wspc-&gt;&gt;+server:请求连接</span><br><span class="line">server-&gt;&gt;-wspc:连接结果</span><br><span class="line">wspc-&gt;&gt;wsps:WspMessage&#123;RESPOND:WspResponse&#125;</span><br><span class="line">wsps-&gt;&gt;client:连接结果</span><br><span class="line">client--&gt;server:连接建立</span><br><span class="line">client-&gt;&gt;+wsps:数据请求</span><br><span class="line">wsps-&gt;&gt;+wspc:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wspc-&gt;&gt;+server:数据请求</span><br><span class="line">server-&gt;&gt;-wspc:数据响应</span><br><span class="line">wspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;</span><br><span class="line">wsps-&gt;&gt;-client:数据响应</span><br><span class="line">client--&gt;server:连接建立</span><br></pre></td></tr></table></figure>
 
 <h3 id="注册路由"><a href="#注册路由" class="headerlink" title="注册路由"></a>注册路由</h3><p>关于http路由的注册这里设计了两种方式，假定wsps所在域名为<code>wsps.com</code>：</p>
 <ul>
@@ -373,16 +343,16 @@ client--&gt;server:连接建立
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/next-boot.js"></script>
 
   
 
 
   <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.14.0/dist/mermaid.min.js","integrity":"sha256-7wT34TI0pEBeEFoi4z+vhuSddGh6vUTMWdqJ2SDe2jg="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/third-party/tags/mermaid.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.10.1/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/third-party/pace.js"></script>
 
   
 
