@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.1.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.11.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/config.js"></script>
 
     <meta name="description" content="以不会为借口，你将一无所获">
 <meta property="og:type" content="website">
@@ -123,7 +123,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-count">65</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -132,7 +132,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -172,6 +172,100 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/05/15/2022/20220515/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/05/15/2022/20220515/" class="post-title-link" itemprop="url">日志配置接入Nacos</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-05-15 00:00:00" itemprop="dateCreated datePublished" datetime="2022-05-15T00:00:00+00:00">2022-05-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>前段时间对项目使用的配置中心进行改造，之前使用的是百度的<a target="_blank" rel="noopener" href="https://github.com/knightliao/disconf">disconf</a>但该项目在2016年之后就处于停滞状态，另外其没有http接口用于获取配置无法满足公司建立统一配置中心的需求，于是计划将迁移至<a target="_blank" rel="noopener" href="https://nacos.io/zh-cn/">Nacos</a>，这里简单记录下。</p>
+<h2 id="目标问题"><a href="#目标问题" class="headerlink" title="目标问题"></a>目标问题</h2><p>在应用配置接入Nacos后，便考虑将日志配置也接入Nacos，可能有人会认为在<code>application.yml</code>中也是可以配置日志，但实际的使用中大多还是分开的，这样可以充分利用日框架的功能特性。那么如何将日志配置接入Nacos呢？</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><h3 id="EnvironmentPostProcessor"><a href="#EnvironmentPostProcessor" class="headerlink" title="EnvironmentPostProcessor"></a>EnvironmentPostProcessor</h3><p>这里考虑使用<code>Spring Boot</code>的<code>EnvironmentPostProcessor</code>来进行集成，不了解的同学可以看看<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.application.customize-the-environment-or-application-context">官网文档</a>，这里做下简单的介绍。<code>EnvironmentPostProcessor</code>作为环境配置处理机制，利用此功能我们可以在容器启动前自定义环境和<code>ApplicationContext</code>，用来作为日志配置处理也算合适。</p>
+<h3 id="实现逻辑"><a href="#实现逻辑" class="headerlink" title="实现逻辑"></a>实现逻辑</h3><p>实现逻辑上并不复杂，像大象装入冰箱一样分三步：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">A(创建本地配置) --&gt; B(初始化Nacos)</span><br><span class="line">B --&gt; C(拉取Nacos配置)</span><br></pre></td></tr></table></figure>
+
+<h3 id="本地配置"><a href="#本地配置" class="headerlink" title="本地配置"></a>本地配置</h3><p>事实上一个简易的本地配置是无法避免的，这里仿照<code>Spring Cloud</code>创建并读取本地<code>bootstrap.yml</code>配置文件，设置一些需要用到的参数</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">config:</span> <span class="string">/workspace/config/log.xml</span></span><br><span class="line"><span class="attr">nacos:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">server-addr:</span> <span class="number">192.168</span><span class="number">.7</span><span class="number">.176</span><span class="string">:8848</span></span><br><span class="line">    <span class="attr">group:</span> <span class="string">com.hst.boss</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">dev</span></span><br></pre></td></tr></table></figure>
+
+<p>参数主要设置了两项：</p>
+<ul>
+<li>日志配置文件</li>
+<li>Nacos连接配置</li>
+</ul>
+<p>在Nacos模型中，配置标识由三部分组成</p>
+<ul>
+<li>namespace</li>
+<li>group</li>
+<li>dataId</li>
+</ul>
+<p>这里日志配置使用文件名作为<code>dataId</code></p>
+<h3 id="加载本地配置"><a href="#加载本地配置" class="headerlink" title="加载本地配置"></a>加载本地配置</h3><p>在有了一个简易的本地配置之后，就需要读取处理，这里实现一个<code>EnvironmentPostProcessor</code>，具体的读取代码交由<code>NacosStaticConfigFetcher</code>类来处理，详情可见<a target="_blank" rel="noopener" href="https://gist.github.com/gowsp/1423e16cc5ed416588b58bf8bf604b29">gist</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.xxx.xxx.common.config;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NacosEnvironmentPostProcessor</span> <span class="keyword">implements</span> <span class="title class_">EnvironmentPostProcessor</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessEnvironment</span><span class="params">(ConfigurableEnvironment environment, SpringApplication application)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">NacosStaticConfigFetcher</span>(environment).loadAndPull();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着在<code>src/main/resources/META-INF/spring.factories</code>文件中添加<code>org.springframework.boot.env.EnvironmentPostProcessor=com.xxx.xxx.common.config.NacosEnvironmentPostProcessor</code>作为<code>Spring Boot</code>读取的引导，保证配置被加载即可。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>在经过此番改造只有，便能将所有配置均放入Nacos中，同时可以利用日志配置动态加载的特性实现日志级别的动态刷新，总的来说效果还是不错的，希望这篇文章能帮到各位。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -877,82 +971,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2020/11/20/2020/20201120/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="吴志康">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="醉卧草庐听风雨">
-      <meta itemprop="description" content="以不会为借口，你将一无所获">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 醉卧草庐听风雨">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/11/20/2020/20201120/" class="post-title-link" itemprop="url">Jvm分代及分配</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-11-20 00:00:00" itemprop="dateCreated datePublished" datetime="2020-11-20T00:00:00+00:00">2020-11-20</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>在上篇粗浅的杂谈中介绍了Jvm垃圾回收概念和指标，那么这期就来介绍下Jvm垃圾回收中的分代和分配。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/11/20/2020/20201120/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -980,16 +998,16 @@
 
   
   <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/next-boot.js"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/next-boot.js"></script>
 
   
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@8.14.0/dist/mermaid.min.js","integrity":"sha256-7wT34TI0pEBeEFoi4z+vhuSddGh6vUTMWdqJ2SDe2jg="}}</script>
-  <script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/third-party/tags/mermaid.js"></script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.0.1/dist/mermaid.min.js","integrity":"sha256-CemUs9ITT7liCZpVMktcEw0BpAOZ1+mujlMB3UyuImU="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/third-party/tags/mermaid.js"></script>
 
 
-  <script src="https://unpkg.com/hexo-theme-next@8.11.0/source/js/third-party/pace.js"></script>
+  <script src="https://unpkg.com/hexo-theme-next@8.11.1/source/js/third-party/pace.js"></script>
 
   
 
