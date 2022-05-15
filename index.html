@@ -224,32 +224,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>前段时间对项目使用的配置中心进行改造，之前使用的是百度的<a target="_blank" rel="noopener" href="https://github.com/knightliao/disconf">disconf</a>但该项目在2016年之后就处于停滞状态，另外其没有http接口用于获取配置无法满足公司建立统一配置中心的需求，于是计划将迁移至<a target="_blank" rel="noopener" href="https://nacos.io/zh-cn/">Nacos</a>，这里简单记录下。</p>
-<h2 id="目标问题"><a href="#目标问题" class="headerlink" title="目标问题"></a>目标问题</h2><p>在应用配置接入Nacos后，便考虑将日志配置也接入Nacos，可能有人会认为在<code>application.yml</code>中也是可以配置日志，但实际的使用中大多还是分开的，这样可以充分利用日框架的功能特性。那么如何将日志配置接入Nacos呢？</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><h3 id="EnvironmentPostProcessor"><a href="#EnvironmentPostProcessor" class="headerlink" title="EnvironmentPostProcessor"></a>EnvironmentPostProcessor</h3><p>这里考虑使用<code>Spring Boot</code>的<code>EnvironmentPostProcessor</code>来进行集成，不了解的同学可以看看<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.application.customize-the-environment-or-application-context">官网文档</a>，这里做下简单的介绍。<code>EnvironmentPostProcessor</code>作为环境配置处理机制，利用此功能我们可以在容器启动前自定义环境和<code>ApplicationContext</code>，用来作为日志配置处理也算合适。</p>
-<h3 id="实现逻辑"><a href="#实现逻辑" class="headerlink" title="实现逻辑"></a>实现逻辑</h3><p>实现逻辑上并不复杂，像大象装入冰箱一样分三步：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">A(创建本地配置) --&gt; B(初始化Nacos)</span><br><span class="line">B --&gt; C(拉取Nacos配置)</span><br></pre></td></tr></table></figure>
-
-<h3 id="本地配置"><a href="#本地配置" class="headerlink" title="本地配置"></a>本地配置</h3><p>事实上一个简易的本地配置是无法避免的，这里仿照<code>Spring Cloud</code>创建并读取本地<code>bootstrap.yml</code>配置文件，设置一些需要用到的参数</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">config:</span> <span class="string">/workspace/config/log.xml</span></span><br><span class="line"><span class="attr">nacos:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">server-addr:</span> <span class="number">192.168</span><span class="number">.7</span><span class="number">.176</span><span class="string">:8848</span></span><br><span class="line">    <span class="attr">group:</span> <span class="string">com.hst.boss</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">dev</span></span><br></pre></td></tr></table></figure>
-
-<p>参数主要设置了两项：</p>
-<ul>
-<li>日志配置文件</li>
-<li>Nacos连接配置</li>
-</ul>
-<p>在Nacos模型中，配置标识由三部分组成</p>
-<ul>
-<li>namespace</li>
-<li>group</li>
-<li>dataId</li>
-</ul>
-<p>这里日志配置使用文件名作为<code>dataId</code></p>
-<h3 id="加载本地配置"><a href="#加载本地配置" class="headerlink" title="加载本地配置"></a>加载本地配置</h3><p>在有了一个简易的本地配置之后，就需要读取处理，这里实现一个<code>EnvironmentPostProcessor</code>，具体的读取代码交由<code>NacosStaticConfigFetcher</code>类来处理，详情可见<a target="_blank" rel="noopener" href="https://gist.github.com/gowsp/1423e16cc5ed416588b58bf8bf604b29">gist</a></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.xxx.xxx.common.config;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NacosEnvironmentPostProcessor</span> <span class="keyword">implements</span> <span class="title class_">EnvironmentPostProcessor</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessEnvironment</span><span class="params">(ConfigurableEnvironment environment, SpringApplication application)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">NacosStaticConfigFetcher</span>(environment).loadAndPull();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着在<code>src/main/resources/META-INF/spring.factories</code>文件中添加<code>org.springframework.boot.env.EnvironmentPostProcessor=com.xxx.xxx.common.config.NacosEnvironmentPostProcessor</code>作为<code>Spring Boot</code>读取的引导，保证配置被加载即可。</p>
-<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>在经过此番改造只有，便能将所有配置均放入Nacos中，同时可以利用日志配置动态加载的特性实现日志级别的动态刷新，总的来说效果还是不错的，希望这篇文章能帮到各位。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/05/15/2022/20220515/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
