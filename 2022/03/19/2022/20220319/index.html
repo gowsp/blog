@@ -128,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">66</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -239,32 +239,30 @@
 <li>cwspc作为服务的使用方请求wsps，请求匹配已注册的路由进行数据交互</li>
 <li>wsps作为服务桥梁将两条websocket的流量进行透传</li>
 </ul>
-<pre class="mermaid">
-sequenceDiagram
+<pre><code class="highlight mermaid">sequenceDiagram
 server--&gt;swspc:互通
-swspc-&gt;&gt;wsps:WspMessage{CONNECT:WspRequest}
-wsps-&gt;&gt;swspc:WspMessage{RESPOND:WspResponse}
+swspc-&gt;&gt;wsps:WspMessage&#123;CONNECT:WspRequest&#125;
+wsps-&gt;&gt;swspc:WspMessage&#123;RESPOND:WspResponse&#125;
 server--&gt;wsps:注册完成
 cwspc--&gt;client:监听
 client-&gt;&gt;+cwspc:连接请求
-cwspc-&gt;&gt;+wsps:WspMessage{CONNECT:WspRequest}
-wsps-&gt;&gt;+swspc:WspMessage{CONNECT:WspRequest}
+cwspc-&gt;&gt;+wsps:WspMessage&#123;CONNECT:WspRequest&#125;
+wsps-&gt;&gt;+swspc:WspMessage&#123;CONNECT:WspRequest&#125;
 swspc-&gt;&gt;+server:请求连接
 server-&gt;&gt;-swspc:连接结果
-swspc-&gt;&gt;-wsps:WspMessage{RESPOND:WspResponse}
-wsps-&gt;&gt;-cwspc:WspMessage{RESPOND:WspResponse}
+swspc-&gt;&gt;-wsps:WspMessage&#123;RESPOND:WspResponse&#125;
+wsps-&gt;&gt;-cwspc:WspMessage&#123;RESPOND:WspResponse&#125;
 cwspc-&gt;&gt;-client:连接结果
 client--&gt;server:连接建立
 client-&gt;&gt;+cwspc:数据请求
-cwspc-&gt;&gt;+wsps:WspMessage{cmd:TRANSFER}
-wsps-&gt;&gt;+swspc:WspMessage{cmd:TRANSFER}
+cwspc-&gt;&gt;+wsps:WspMessage&#123;cmd:TRANSFER&#125;
+wsps-&gt;&gt;+swspc:WspMessage&#123;cmd:TRANSFER&#125;
 swspc-&gt;&gt;+server:数据请求
 server-&gt;&gt;-swspc:数据响应
-swspc-&gt;&gt;-wsps:WspMessage{cmd:TRANSFER}
-wsps-&gt;&gt;-cwspc:WspMessage{cmd:TRANSFER}
+swspc-&gt;&gt;-wsps:WspMessage&#123;cmd:TRANSFER&#125;
+wsps-&gt;&gt;-cwspc:WspMessage&#123;cmd:TRANSFER&#125;
 cwspc-&gt;&gt;-client:数据响应
-client--&gt;server:连接建立
-</pre>
+client--&gt;server:连接建立</code></pre>
 
 <h3 id="注册路由"><a href="#注册路由" class="headerlink" title="注册路由"></a>注册路由</h3><p>在交互流程中，需要一个全局路由信息sync.Map记录连接，key是连接标识，value是websocket连接，当客户机连接时这样就可以实现两条websocket的通讯。其配置格式：protocols:&#x2F;&#x2F;channel[:password]@[bind_address]:port</p>
 <ul>
