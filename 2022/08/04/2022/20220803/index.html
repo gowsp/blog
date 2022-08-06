@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.1.2/css/all.min.css" integrity="sha256-xejo6yLi6vGtAjcMIsY8BHdKsLg7QynVlFMzdQgUuy8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/config.js"></script>
+
+    <meta name="description" content="一直以来对 bing 的每日一图感到十分满意，便想着用 Shell 脚本收集起来，之前一直用正则匹配的方式获取图片标签来下载，但此方法不稳定，当 bing 官方修改标签就会导致抓取失败，直到某一天突然又失效了，于是忍无可忍的我 google 了下，发现了 stackoverflow 上有位老哥有同样需求，其中的答案启发了我，下面就来看看如何实现 Shell 抓取 bing 壁纸。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shell 抓取 bing 壁纸">
+<meta property="og:url" content="https://www.wuzk.ink/2022/08/04/2022/20220803/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="一直以来对 bing 的每日一图感到十分满意，便想着用 Shell 脚本收集起来，之前一直用正则匹配的方式获取图片标签来下载，但此方法不稳定，当 bing 官方修改标签就会导致抓取失败，直到某一天突然又失效了，于是忍无可忍的我 google 了下，发现了 stackoverflow 上有位老哥有同样需求，其中的答案启发了我，下面就来看看如何实现 Shell 抓取 bing 壁纸。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-04T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-04T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Shell">
+<meta property="article:tag" content="jq">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2022/08/04/2022/20220803/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2022/08/04/2022/20220803/","path":"2022/08/04/2022/20220803/","title":"Shell 抓取 bing 壁纸"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Shell 抓取 bing 壁纸 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">处理流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE-API"><span class="nav-number">2.</span> <span class="nav-text">访问 API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90%E5%9C%B0%E5%9D%80"><span class="nav-number">3.</span> <span class="nav-text">解析地址</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%AD%97%E6%AE%B5%E6%8F%90%E5%8F%96"><span class="nav-number">3.1.</span> <span class="nav-text">单字段提取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E7%BB%84%E6%8F%90%E5%8F%96"><span class="nav-number">3.2.</span> <span class="nav-text">数组提取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#url-%E6%8F%90%E5%8F%96"><span class="nav-number">3.3.</span> <span class="nav-text">url 提取</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E6%9C%AC%E5%9C%B0"><span class="nav-number">4.</span> <span class="nav-text">下载本地</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E8%84%9A%E6%9C%AC"><span class="nav-number">5.</span> <span class="nav-text">完整脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">6.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/08/04/2022/20220803/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Shell 抓取 bing 壁纸 | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Shell 抓取 bing 壁纸
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-08-04 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-04T00:00:00+00:00">2022-08-04</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>一直以来对 <code>bing</code> 的每日一图感到十分满意，便想着用 Shell 脚本收集起来，之前一直用正则匹配的方式获取图片标签来下载，但此方法不稳定，当 bing 官方修改标签就会导致抓取失败，直到某一天突然又失效了，于是忍无可忍的我 google 了下，发现了 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10639914/is-there-a-way-to-get-bings-photo-of-the-day">stackoverflow</a> 上有位老哥有同样需求，其中的答案启发了我，下面就来看看如何实现 Shell 抓取 bing 壁纸。</p>
+<span id="more"></span>
+
+<h2 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h2><p>先来简单的画画流程图：</p>
+<pre><code class="highlight mermaid">graph LR
+A(访问API) --结果--&gt; B(解析地址)
+B --&gt; C(下载本地)</code></pre>
+
+<p>一目了然，就像把大象装进冰箱一样。</p>
+<h2 id="访问-API"><a href="#访问-API" class="headerlink" title="访问 API"></a>访问 API</h2><p>按照 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10639914/is-there-a-way-to-get-bings-photo-of-the-day">stackoverflow</a> 答案这里选用 <code>http://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1</code>作为<code>获取API</code></p>
+<p>可以注意到 <code>API链接</code> 中有三个参数，其含义分别如下</p>
+<ul>
+<li><code>format=js</code>：表示数据相应为 JSON 格式</li>
+<li><code>idx=0</code>：表以今天的偏移量，0 表示今天，1 表示昨天，以此类推，最大值为 7</li>
+<li><code>n=1</code>：表示返回偏移量之前的图片数量，最大值为 8</li>
+</ul>
+<p>尝试用 <code>curl</code> 命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>可得到如下类似结果</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;images&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      ...</span><br><span class="line">      <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/th?id=OHR.QiXiFestival2022_ZH-CN2628111266_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp&quot;</span><span class="punctuation">,</span></span><br><span class="line">      ...</span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;tooltips&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="解析地址"><a href="#解析地址" class="headerlink" title="解析地址"></a>解析地址</h2><p>可以观察到地址是实际是在返回结果的 <code>images.url</code> 字段，那么该如何提取这个字段呢？</p>
+<p>这里借助了 <a target="_blank" rel="noopener" href="https://stedolan.github.io/jq/">jq</a> 命令，<code>jq</code> 是一个非常强大的 Shell 命令，可以用来处理提取 <code>JSON</code> 数据，以此为例顺便介绍下 <code>jq</code> 的用法。</p>
+<h3 id="单字段提取"><a href="#单字段提取" class="headerlink" title="单字段提取"></a>单字段提取</h3><p><code>jq</code> 以 <code>.字段名</code> 便可提取 <code>JSON</code> 对象字段，此例中需要提取 <code>images</code> 字段，示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq <span class="string">&#x27;.images</span></span><br></pre></td></tr></table></figure>
+
+<p>这样结果便只有 <code>images</code> 字段，输出如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">  <span class="punctuation">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/th?id=OHR.QiXiFestival2022_ZH-CN2628111266_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp&quot;</span><span class="punctuation">,</span></span><br><span class="line">    ...</span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数组提取"><a href="#数组提取" class="headerlink" title="数组提取"></a>数组提取</h3><p>可以看到 <code>images</code> 提取出的结果是数组，那么对数组又该如何处理呢？这里 <code>jq</code> 支持以 <code>.[数组下标]</code> 提取对应数组对象，此例中提取 <code>images</code> 数组的第一个元素，示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq <span class="string">&#x27;.images | .[0]&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到 <code>jq</code> 是支持管道符的，在以上操作之后，输出如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/th?id=OHR.QiXiFestival2022_ZH-CN2628111266_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp&quot;</span></span><br><span class="line">  ...</span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="url-提取"><a href="#url-提取" class="headerlink" title="url 提取"></a>url 提取</h3><p>这是便又回到了对象字段提取的例子，此例中提取 <code>url</code> 字段，示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq <span class="string">&#x27;.images| .[0] | .url&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>最终输出如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;/th?id=OHR.QiXiFestival2022_ZH-CN2628111266_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>是不是以为地址提取到此为止了？ NO～NO～NO NO～，可以观察到提取的结果前后带了 <code>&quot;</code>，后续使用上非常不方便，好在<code>jq</code> 支持参数中加上 <code>-r</code>，字符串便会消除 <code>&quot;</code>，示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq -r <span class="string">&#x27;.images| .[0] | .url&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="下载本地"><a href="#下载本地" class="headerlink" title="下载本地"></a>下载本地</h2><p>到此为止，我们已经提取到了图片的地址，下载就比较容易了，示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">img=`curl -s <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq -r <span class="string">&#x27;.images| .[0] | .url&#x27;</span>`</span><br><span class="line">curl -s <span class="string">&quot;https://www.bing.com<span class="variable">$img</span>&quot;</span> -o bing.jpg</span><br></pre></td></tr></table></figure>
+
+<h2 id="完整脚本"><a href="#完整脚本" class="headerlink" title="完整脚本"></a>完整脚本</h2><p>以上步骤组合起来便是如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">data=`curl <span class="string">&#x27;https://www.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&#x27;</span> | jq <span class="string">&#x27;.images&#x27;</span>`</span><br><span class="line"><span class="comment"># 取 images 数组长度</span></span><br><span class="line">length=`<span class="built_in">echo</span> <span class="variable">$data</span> | jq <span class="string">&#x27;. | length&#x27;</span>`</span><br><span class="line">length=`<span class="built_in">expr</span> <span class="variable">$length</span> - 1`</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `<span class="built_in">seq</span> 0 <span class="variable">$length</span>`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  <span class="comment"># 取 images 数组第 i 个元素</span></span><br><span class="line">  item=`<span class="built_in">echo</span> <span class="variable">$data</span> | jq <span class="string">&quot;.[<span class="variable">$i</span>]&quot;</span>`</span><br><span class="line">  <span class="comment"># 提取日期</span></span><br><span class="line">  <span class="built_in">date</span>=`<span class="built_in">echo</span> <span class="variable">$item</span> | jq -r <span class="string">&quot;.enddate&quot;</span>`</span><br><span class="line">  <span class="comment"># 图片名为日期</span></span><br><span class="line">  file=<span class="string">&quot;~/<span class="variable">$date</span>.jpg&quot;</span>;</span><br><span class="line">  <span class="comment"># 提取图片地址</span></span><br><span class="line">  url=`<span class="built_in">echo</span> <span class="variable">$item</span> | jq -r <span class="string">&quot;.url&quot;</span>` </span><br><span class="line">  <span class="comment"># 下载图片</span></span><br><span class="line">  curl -s <span class="string">&quot;https://www.bing.com<span class="variable">$url</span>&quot;</span> -o <span class="variable">$file</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>自此我们获得了一个可以下载 bing 壁纸的 shell 脚本，配合 <code>cron</code> 定时作业，可以实现每日抓取，我大概已经收集了两三年了，没事儿会翻出来看，希望可以帮助到大家。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Shell/" rel="tag"># Shell</a>
+              <a href="/tags/jq/" rel="tag"># jq</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/06/11/2022/20220611/" rel="prev" title="Maven 模块版本管理">
+                  <i class="fa fa-chevron-left"></i> Maven 模块版本管理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/next-boot.js"></script>
+
+  
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.1.3/dist/mermaid.min.js","integrity":"sha256-TIYL00Rhw/8WaoUhYTLX9SKIEFdXxg+yMWSLVUbhiLg="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+
+</body>
+</html>
