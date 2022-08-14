@@ -123,7 +123,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-count">70</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -132,7 +132,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-count">36</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -172,6 +172,113 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/08/14/2022/20220814/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/14/2022/20220814/" class="post-title-link" itemprop="url">JMeter HTTP 签名处理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-08-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-14T00:00:00+00:00">2022-08-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。</p>
+<h2 id="问题核心"><a href="#问题核心" class="headerlink" title="问题核心"></a>问题核心</h2><h3 id="签名机制"><a href="#签名机制" class="headerlink" title="签名机制"></a>签名机制</h3><p>首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：</p>
+<ul>
+<li>HTTP 请求方法，例：GET、POST</li>
+<li>HTTP 请求路径，例：&#x2F;xxx&#x2F;xxx</li>
+<li>HTTP 请求时间戳，例：1654052923</li>
+</ul>
+<p>将以上参数结合起来，再使用 <code>HmacSHA1</code> 以下列形式摘要生成 <code>X-Signature</code> 请求头</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X-Signature=HmacSHA1(&#x27;method=GET&amp;path=/xxx/xxx&amp;date=1654052923&#x27;, xxxxxxxxxxxxxxx)</span><br></pre></td></tr></table></figure>
+
+<p>每次请求后台时皆按此进行签名，这样便保证了相对的安全性。不过这里只是简单的举例，实际参与签名参数比例子中的要更多，可以按照业务进行参数的增减。</p>
+<h3 id="测试难点"><a href="#测试难点" class="headerlink" title="测试难点"></a>测试难点</h3><p>签名机制加完之后测试妹子是难过的，因为原先的 <code>JMeter</code> 脚本均是静态参数，接口处于无法验证状态。<strong>PS：其实接口都是单元测试过的，应该没多少问题</strong>。但口说无凭，为了解决这个问题，开始研究 <code>JMeter</code> 下使用签名的方式。</p>
+<h2 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h2><h3 id="方案确定"><a href="#方案确定" class="headerlink" title="方案确定"></a>方案确定</h3><p>在 <code>JMeter</code> 官方<a target="_blank" rel="noopener" href="https://jmeter.apache.org/usermanual/component_reference.html">组件指南</a>中可以轻易找到所需要的资料，这里需要了解 <code>PreProcessor</code> ，顾名思义 <code>PreProcessor</code> 用来在请求前对采样器进行动态修改，类似拦截器，与我们的签名需求相符。接下来简单画画流程图理一下思路：</p>
+<pre><code class="highlight mermaid">graph LR
+A(HTTP Sampler) --&gt; B(PreProcessor) --签名处理--&gt; C(后台)</code></pre>
+
+<h3 id="PreProcessor"><a href="#PreProcessor" class="headerlink" title="PreProcessor"></a>PreProcessor</h3><p>在<a target="_blank" rel="noopener" href="https://jmeter.apache.org/usermanual/component_reference.html#preprocessors">官方PreProcessor文档</a>中有几种<code>预处理器</code>，这里只需关注 <code>JSR223 PreProcessor</code>，另外的<code>BeanShell PreProcessor</code>是类似的，但官方已经不推荐使用了。根据<code>JSR223 PreProcessor</code> 文档介绍，<code>PreProcessor</code>脚本自动拥有如下成员变量：</p>
+<ul>
+<li>log - (Logger) - 可用于写入日志文件</li>
+<li>Label - 字符串标签</li>
+<li>FileName - 脚本文件名（如果有）</li>
+<li>Parameters - 参数（作为字符串）</li>
+<li>args - 作为字符串数组的参数（按空格分割）</li>
+<li>ctx - (JMeterContext) - 提供对上下文的访问</li>
+<li>vars - (JMeterVariables) - 提供对变量的读&#x2F;写访问权限，如：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vars.get(key);</span><br><span class="line">vars.put(key,val);</span><br><span class="line">vars.putObject(&quot;OBJ1&quot;,new Object());</span><br><span class="line">vars.getObject(&quot;OBJ2&quot;);</span><br></pre></td></tr></table></figure></li>
+<li>props - (JMeterProperties - class java.util.Properties) - 例 <code>props.get(&quot;START.HMS&quot;); props.put(&quot;PROP1&quot;,&quot;1234&quot;);</code></li>
+<li>sampler - (Sampler)- 提供对当前采样器的访问</li>
+<li>OUT - System.out - 例 <code>OUT.println(&quot;message&quot;)</code></li>
+</ul>
+<h3 id="编码实现"><a href="#编码实现" class="headerlink" title="编码实现"></a>编码实现</h3><p>在本例的签名算法中，我们需要知道 <code>HTTP采样器</code> 的请求路径和请求方式，但 <code>PreProcessor</code> 文档并没有告诉我们这些，只是简单的介绍了些成员变量，那么签名算法中的参数该如何去取呢？</p>
+<p>这时需要留意 <code>PreProcessor</code> 文档，点击 <a target="_blank" rel="noopener" href="https://jmeter.apache.org/api/org/apache/jmeter/samplers/Sampler.html">Sampler</a> 就会来到官方采样器 API 文档页，选择进入其中的 <a target="_blank" rel="noopener" href="https://jmeter.apache.org/api/org/apache/jmeter/protocol/http/sampler/HTTPSampler.html">HTTPSampler</a> 便可找到所需要的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 HTTP 方法</span></span><br><span class="line"><span class="type">String</span> <span class="variable">method</span> <span class="operator">=</span> sampler.getMethod();</span><br><span class="line"><span class="comment">// 获取 HTTP 路径</span></span><br><span class="line"><span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> sampler.getPath();</span><br></pre></td></tr></table></figure>
+
+<p>这里选择的执行引擎是 <a target="_blank" rel="noopener" href="https://beanshell.github.io/">BeanShell</a>，它内嵌于 <code>JMeter</code> 中使用方便，开箱即用。</p>
+<p><code>HmacSHA1</code> 摘要签名工具直接用 <a target="_blank" rel="noopener" href="https://commons.apache.org/proper/commons-codec/">Apache</a> 库即可，具体API的使用可以观摩<a target="_blank" rel="noopener" href="https://commons.apache.org/proper/commons-codec/apidocs/org/apache/commons/codec/digest/HmacUtils.html">官方文档</a>，以下便是一份完整的示例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.time.Instant;</span><br><span class="line"><span class="keyword">import</span> org.apache.jmeter.protocol.http.control.Header;</span><br><span class="line"><span class="keyword">import</span> org.apache.jmeter.protocol.http.control.HeaderManager;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.codec.digest.HmacUtils;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.codec.digest.HmacAlgorithms;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">secret</span> <span class="operator">=</span> <span class="string">&quot;xxxxxxxxxxxxxxx&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">HeaderManager</span> <span class="variable">headers</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HeaderManager</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">addHeader</span><span class="params">(String name, Object value)</span>&#123;</span><br><span class="line">	headers.add(<span class="keyword">new</span> <span class="title class_">Header</span>(name, value.toString()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">method</span> <span class="operator">=</span> sampler.getMethod();</span><br><span class="line"><span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> sampler.getPath();</span><br><span class="line"><span class="type">long</span> <span class="variable">second</span> <span class="operator">=</span> Instant.now().getEpochSecond();</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> <span class="string">&quot;method=&quot;</span> + method + <span class="string">&quot;&amp;path=&quot;</span> + path + <span class="string">&quot;&amp;date=&quot;</span> + second</span><br><span class="line"><span class="type">String</span> <span class="variable">hmacHex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HmacUtils</span>(HmacAlgorithms.HMAC_SHA_1, secret).hmacHex(value);</span><br><span class="line">addHeader(<span class="string">&quot;X-Signature&quot;</span>, hmacHex);</span><br><span class="line">addHeader(<span class="string">&quot;Date&quot;</span>, second);</span><br><span class="line"></span><br><span class="line">sampler.setHeaderManager(headers);</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何调试"><a href="#如何调试" class="headerlink" title="如何调试"></a>如何调试</h3><p>如果脚本很复杂，调试就必不可少了，个人的经验是可以利用内置的成员变量 <code>log</code> 或 <code>OUT</code> 来打印输出参数，达到调试的目的</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>看起来挺容易的，但前前后后花了大概两个小时，最后算是不负测试希望完美交卷，测试可以接着Happy的验接口找 bug 了。而我呢事了拂衣去，掌握了一门工具 <code>JMeter</code>，学会了一门脚本语言 <code>BeanShell</code>，收获还算不错。希望可以帮到大家。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -862,82 +969,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/25/2021/20211223/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2021/11/06/2021/20211106/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="吴志康">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="醉卧草庐听风雨">
-      <meta itemprop="description" content="以不会为借口，你将一无所获">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 醉卧草庐听风雨">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/11/06/2021/20211106/" class="post-title-link" itemprop="url">Java项目镜像化之Dockerfile</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-11-06 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-06T00:00:00+00:00">2021-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>最近公司准备将项目进行容器化部署，因此我对Docker相关的知识进行了些了解和学习, 因此写篇日志记录下。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/11/06/2021/20211106/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

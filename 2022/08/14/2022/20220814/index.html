@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.1.2/css/all.min.css" integrity="sha256-xejo6yLi6vGtAjcMIsY8BHdKsLg7QynVlFMzdQgUuy8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/config.js"></script>
+
+    <meta name="description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。 问题核心签名机制首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：  HTTP 请求方法，例：GET、P">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JMeter HTTP 签名处理">
+<meta property="og:url" content="https://www.wuzk.ink/2022/08/14/2022/20220814/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。 问题核心签名机制首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：  HTTP 请求方法，例：GET、P">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-08-14T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-14T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="JMeter">
+<meta property="article:tag" content="BeanShell">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2022/08/14/2022/20220814/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2022/08/14/2022/20220814/","path":"2022/08/14/2022/20220814/","title":"JMeter HTTP 签名处理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>JMeter HTTP 签名处理 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%A0%B8%E5%BF%83"><span class="nav-number">1.</span> <span class="nav-text">问题核心</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6"><span class="nav-number">1.1.</span> <span class="nav-text">签名机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E9%9A%BE%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">测试难点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E8%BF%87%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">解决过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E7%A1%AE%E5%AE%9A"><span class="nav-number">2.1.</span> <span class="nav-text">方案确定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PreProcessor"><span class="nav-number">2.2.</span> <span class="nav-text">PreProcessor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">编码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%B0%83%E8%AF%95"><span class="nav-number">2.4.</span> <span class="nav-text">如何调试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">3.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">70</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">36</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/08/14/2022/20220814/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="JMeter HTTP 签名处理 | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JMeter HTTP 签名处理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-08-14 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-14T00:00:00+00:00">2022-08-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。</p>
+<h2 id="问题核心"><a href="#问题核心" class="headerlink" title="问题核心"></a>问题核心</h2><h3 id="签名机制"><a href="#签名机制" class="headerlink" title="签名机制"></a>签名机制</h3><p>首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：</p>
+<ul>
+<li>HTTP 请求方法，例：GET、POST</li>
+<li>HTTP 请求路径，例：&#x2F;xxx&#x2F;xxx</li>
+<li>HTTP 请求时间戳，例：1654052923</li>
+</ul>
+<p>将以上参数结合起来，再使用 <code>HmacSHA1</code> 以下列形式摘要生成 <code>X-Signature</code> 请求头</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X-Signature=HmacSHA1(&#x27;method=GET&amp;path=/xxx/xxx&amp;date=1654052923&#x27;, xxxxxxxxxxxxxxx)</span><br></pre></td></tr></table></figure>
+
+<p>每次请求后台时皆按此进行签名，这样便保证了相对的安全性。不过这里只是简单的举例，实际参与签名参数比例子中的要更多，可以按照业务进行参数的增减。</p>
+<h3 id="测试难点"><a href="#测试难点" class="headerlink" title="测试难点"></a>测试难点</h3><p>签名机制加完之后测试妹子是难过的，因为原先的 <code>JMeter</code> 脚本均是静态参数，接口处于无法验证状态。<strong>PS：其实接口都是单元测试过的，应该没多少问题</strong>。但口说无凭，为了解决这个问题，开始研究 <code>JMeter</code> 下使用签名的方式。</p>
+<h2 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h2><h3 id="方案确定"><a href="#方案确定" class="headerlink" title="方案确定"></a>方案确定</h3><p>在 <code>JMeter</code> 官方<a target="_blank" rel="noopener" href="https://jmeter.apache.org/usermanual/component_reference.html">组件指南</a>中可以轻易找到所需要的资料，这里需要了解 <code>PreProcessor</code> ，顾名思义 <code>PreProcessor</code> 用来在请求前对采样器进行动态修改，类似拦截器，与我们的签名需求相符。接下来简单画画流程图理一下思路：</p>
+<pre><code class="highlight mermaid">graph LR
+A(HTTP Sampler) --&gt; B(PreProcessor) --签名处理--&gt; C(后台)</code></pre>
+
+<h3 id="PreProcessor"><a href="#PreProcessor" class="headerlink" title="PreProcessor"></a>PreProcessor</h3><p>在<a target="_blank" rel="noopener" href="https://jmeter.apache.org/usermanual/component_reference.html#preprocessors">官方PreProcessor文档</a>中有几种<code>预处理器</code>，这里只需关注 <code>JSR223 PreProcessor</code>，另外的<code>BeanShell PreProcessor</code>是类似的，但官方已经不推荐使用了。根据<code>JSR223 PreProcessor</code> 文档介绍，<code>PreProcessor</code>脚本自动拥有如下成员变量：</p>
+<ul>
+<li>log - (Logger) - 可用于写入日志文件</li>
+<li>Label - 字符串标签</li>
+<li>FileName - 脚本文件名（如果有）</li>
+<li>Parameters - 参数（作为字符串）</li>
+<li>args - 作为字符串数组的参数（按空格分割）</li>
+<li>ctx - (JMeterContext) - 提供对上下文的访问</li>
+<li>vars - (JMeterVariables) - 提供对变量的读&#x2F;写访问权限，如：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vars.get(key);</span><br><span class="line">vars.put(key,val);</span><br><span class="line">vars.putObject(&quot;OBJ1&quot;,new Object());</span><br><span class="line">vars.getObject(&quot;OBJ2&quot;);</span><br></pre></td></tr></table></figure></li>
+<li>props - (JMeterProperties - class java.util.Properties) - 例 <code>props.get(&quot;START.HMS&quot;); props.put(&quot;PROP1&quot;,&quot;1234&quot;);</code></li>
+<li>sampler - (Sampler)- 提供对当前采样器的访问</li>
+<li>OUT - System.out - 例 <code>OUT.println(&quot;message&quot;)</code></li>
+</ul>
+<h3 id="编码实现"><a href="#编码实现" class="headerlink" title="编码实现"></a>编码实现</h3><p>在本例的签名算法中，我们需要知道 <code>HTTP采样器</code> 的请求路径和请求方式，但 <code>PreProcessor</code> 文档并没有告诉我们这些，只是简单的介绍了些成员变量，那么签名算法中的参数该如何去取呢？</p>
+<p>这时需要留意 <code>PreProcessor</code> 文档，点击 <a target="_blank" rel="noopener" href="https://jmeter.apache.org/api/org/apache/jmeter/samplers/Sampler.html">Sampler</a> 就会来到官方采样器 API 文档页，选择进入其中的 <a target="_blank" rel="noopener" href="https://jmeter.apache.org/api/org/apache/jmeter/protocol/http/sampler/HTTPSampler.html">HTTPSampler</a> 便可找到所需要的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 HTTP 方法</span></span><br><span class="line"><span class="type">String</span> <span class="variable">method</span> <span class="operator">=</span> sampler.getMethod();</span><br><span class="line"><span class="comment">// 获取 HTTP 路径</span></span><br><span class="line"><span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> sampler.getPath();</span><br></pre></td></tr></table></figure>
+
+<p>这里选择的执行引擎是 <a target="_blank" rel="noopener" href="https://beanshell.github.io/">BeanShell</a>，它内嵌于 <code>JMeter</code> 中使用方便，开箱即用。</p>
+<p><code>HmacSHA1</code> 摘要签名工具直接用 <a target="_blank" rel="noopener" href="https://commons.apache.org/proper/commons-codec/">Apache</a> 库即可，具体API的使用可以观摩<a target="_blank" rel="noopener" href="https://commons.apache.org/proper/commons-codec/apidocs/org/apache/commons/codec/digest/HmacUtils.html">官方文档</a>，以下便是一份完整的示例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.time.Instant;</span><br><span class="line"><span class="keyword">import</span> org.apache.jmeter.protocol.http.control.Header;</span><br><span class="line"><span class="keyword">import</span> org.apache.jmeter.protocol.http.control.HeaderManager;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.codec.digest.HmacUtils;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.codec.digest.HmacAlgorithms;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">secret</span> <span class="operator">=</span> <span class="string">&quot;xxxxxxxxxxxxxxx&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">HeaderManager</span> <span class="variable">headers</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HeaderManager</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">addHeader</span><span class="params">(String name, Object value)</span>&#123;</span><br><span class="line">	headers.add(<span class="keyword">new</span> <span class="title class_">Header</span>(name, value.toString()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">method</span> <span class="operator">=</span> sampler.getMethod();</span><br><span class="line"><span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> sampler.getPath();</span><br><span class="line"><span class="type">long</span> <span class="variable">second</span> <span class="operator">=</span> Instant.now().getEpochSecond();</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> <span class="string">&quot;method=&quot;</span> + method + <span class="string">&quot;&amp;path=&quot;</span> + path + <span class="string">&quot;&amp;date=&quot;</span> + second</span><br><span class="line"><span class="type">String</span> <span class="variable">hmacHex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HmacUtils</span>(HmacAlgorithms.HMAC_SHA_1, secret).hmacHex(value);</span><br><span class="line">addHeader(<span class="string">&quot;X-Signature&quot;</span>, hmacHex);</span><br><span class="line">addHeader(<span class="string">&quot;Date&quot;</span>, second);</span><br><span class="line"></span><br><span class="line">sampler.setHeaderManager(headers);</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何调试"><a href="#如何调试" class="headerlink" title="如何调试"></a>如何调试</h3><p>如果脚本很复杂，调试就必不可少了，个人的经验是可以利用内置的成员变量 <code>log</code> 或 <code>OUT</code> 来打印输出参数，达到调试的目的</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>看起来挺容易的，但前前后后花了大概两个小时，最后算是不负测试希望完美交卷，测试可以接着Happy的验接口找 bug 了。而我呢事了拂衣去，掌握了一门工具 <code>JMeter</code>，学会了一门脚本语言 <code>BeanShell</code>，收获还算不错。希望可以帮到大家。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JMeter/" rel="tag"># JMeter</a>
+              <a href="/tags/BeanShell/" rel="tag"># BeanShell</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/08/04/2022/20220803/" rel="prev" title="Shell 抓取 bing 壁纸">
+                  <i class="fa fa-chevron-left"></i> Shell 抓取 bing 壁纸
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/next-boot.js"></script>
+
+  
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.1.3/dist/mermaid.min.js","integrity":"sha256-TIYL00Rhw/8WaoUhYTLX9SKIEFdXxg+yMWSLVUbhiLg="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+
+</body>
+</html>
