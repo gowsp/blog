@@ -22,12 +22,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.3","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.12.3/source/js/config.js"></script>
 
-    <meta name="description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。 问题核心签名机制首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：  HTTP 请求方法，例：GET、P">
+    <meta name="description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JMeter HTTP 签名处理">
 <meta property="og:url" content="https://www.wuzk.ink/2022/08/14/2022/20220814/index.html">
 <meta property="og:site_name" content="醉卧草庐听风雨">
-<meta property="og:description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。 问题核心签名机制首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：  HTTP 请求方法，例：GET、P">
+<meta property="og:description" content="为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-14T00:00:00.000Z">
 <meta property="article:modified_time" content="2022-08-14T00:00:00.000Z">
@@ -230,6 +230,8 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>为了增强接口安全性，最近在请求上加了签名机制，但由于签名算法中组合了动态的时间戳导致测试难度提升，作为始作俑者我不得不帮助测试解决这个问题。于是记录下关于在 JMeter 中如果对 HTTP 请求进行拦截做签名处理。</p>
+<span id="more"></span>
+
 <h2 id="问题核心"><a href="#问题核心" class="headerlink" title="问题核心"></a>问题核心</h2><h3 id="签名机制"><a href="#签名机制" class="headerlink" title="签名机制"></a>签名机制</h3><p>首先简要介绍下本次所加的签名机制，签名的意义在于请求不被篡改，因此参与签名参数必须全部来源于请求的参数，这里选一些常规参数，如：</p>
 <ul>
 <li>HTTP 请求方法，例：GET、POST</li>
