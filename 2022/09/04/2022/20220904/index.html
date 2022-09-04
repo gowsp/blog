@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/config.js"></script>
+
+    <meta name="description" content="最近在学习中发现了个之前未曾了解的技术 SPI，全称 Service Provider Interface 其源于Oracle 官方教程中的一个概念。此外，SPI 机制在 Dubbo 和 Spring 中也有应用，这里做下记录学习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="创建可扩展程序">
+<meta property="og:url" content="https://www.wuzk.ink/2022/09/04/2022/20220904/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="最近在学习中发现了个之前未曾了解的技术 SPI，全称 Service Provider Interface 其源于Oracle 官方教程中的一个概念。此外，SPI 机制在 Dubbo 和 Spring 中也有应用，这里做下记录学习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-04T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-09-04T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Spring">
+<meta property="article:tag" content="SPI">
+<meta property="article:tag" content="Dubbo">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2022/09/04/2022/20220904/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2022/09/04/2022/20220904/","path":"2022/09/04/2022/20220904/","title":"创建可扩展程序"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>创建可扩展程序 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SPI"><span class="nav-number">1.</span> <span class="nav-text">SPI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.1.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.</span> <span class="nav-text">相关概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">使用流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E5%AE%9E%E6%88%98"><span class="nav-number">2.</span> <span class="nav-text">编码实战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89-SPI"><span class="nav-number">2.1.</span> <span class="nav-text">定义 SPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0SPI"><span class="nav-number">2.2.</span> <span class="nav-text">实现SPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CSPI%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">注册SPI实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E8%B0%83%E7%94%A8"><span class="nav-number">2.4.</span> <span class="nav-text">加载调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">3.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/09/04/2022/20220904/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="创建可扩展程序 | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          创建可扩展程序
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-09-04 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-04T00:00:00+00:00">2022-09-04</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>最近在学习中发现了个之前未曾了解的技术 <code>SPI</code>，全称 <code>Service Provider Interface</code> 其源于<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/ext/basics/spi.html">Oracle 官方教程</a>中的一个概念。此外，<code>SPI 机制</code>在 <code>Dubbo</code> 和 <code>Spring</code> 中也有应用，这里做下记录学习。</p>
+<span id="more"></span>
+
+<h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2><h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>SPI 机制解决了什么问题呢？在<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/ext/basics/spi.html">官方教程</a>介绍如下</p>
+<blockquote>
+<p>可在不修改原始代码的情况下对应用程序进行扩展，通过新的插件或模块来增强功能。</p>
+</blockquote>
+<p>从设计模式来讲 <code>SPI</code> 是一种<code>桥接模式</code>，将程序接口和实现<code>解耦</code>，运行时动态替换接口实现类，为程序提供扩展功能。效果类似如下:</p>
+<pre><code class="highlight mermaid">graph LR
+A(服务使用方) --&gt; B(SPI)
+B --&gt; C(SPI实现1)
+B --&gt; D(SPI实现2)
+B --&gt; E(SPI实现...)</code></pre>
+
+<h3 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h3><p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/ext/basics/spi.html">官方教程</a>中提出了三点概念：</p>
+<ul>
+<li>服务：服务暴露方，组合调用<code>服务提供者接口</code></li>
+<li>服务提供者接口 (SPI)：定义应可用的类和方法</li>
+<li>服务提供者：<code>SPI</code> 的实际实现</li>
+</ul>
+<p>由服务提供者可以抽象出另外两点概念：</p>
+<ul>
+<li>服务配置文件：描述 <code>SPI</code> 实现类的全限定名配置</li>
+<li>服务加载器：加载器通过服务配置文件反射加载对应的 <code>SPI</code> 实现类</li>
+</ul>
+<h3 id="使用流程"><a href="#使用流程" class="headerlink" title="使用流程"></a>使用流程</h3><p>使用基本如下</p>
+<pre><code class="highlight mermaid">graph LR
+A(定义SPI) --&gt; B(定义SPI引用) --&gt; C(实现SPI) --&gt; D(注册SPI实现)</code></pre>
+
+<h2 id="编码实战"><a href="#编码实战" class="headerlink" title="编码实战"></a>编码实战</h2><p>下面就来实战演示下关于 <code>SPI</code> 在三种技术框架下的使用，源码已上传至 <a target="_blank" rel="noopener" href="https://github.com/gowsp/examples/tree/main/java-spi">github</a>。</p>
+<h3 id="定义-SPI"><a href="#定义-SPI" class="headerlink" title="定义 SPI"></a>定义 SPI</h3><p>先定义 <code>SPI</code> 接口，假设存在一个服务员向客户问候接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SPI</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Waiter</span> &#123;</span><br><span class="line">    String <span class="title function_">greet</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注：</strong><code>@SPI</code>注解为 <code>Dubbo SPI</code> 需要，JDK 和 Spring 并不需要此注解。 </p>
+<h3 id="实现SPI"><a href="#实现SPI" class="headerlink" title="实现SPI"></a>实现SPI</h3><p>现在店里有名中国服务员问候内容为中文</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Chinese</span> <span class="keyword">implements</span> <span class="title class_">Waiter</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;你好&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="注册SPI实现"><a href="#注册SPI实现" class="headerlink" title="注册SPI实现"></a>注册SPI实现</h3><p><code>SPI</code>的实现用对应的加载器进行加载，加载形式和配置要求需要按加载器来，下面介绍下配置形式</p>
+<table>
+<thead>
+<tr>
+<th>框架</th>
+<th>配置文件路径</th>
+<th>配置内容格式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK</td>
+<td>META-INF&#x2F;services&#x2F;${SPI接口全限定名}</td>
+<td>${SPI实现类}</td>
+</tr>
+<tr>
+<td>Dubbo</td>
+<td>META-INF&#x2F;dubbo&#x2F;${SPI接口全限定名}</td>
+<td>别名&#x3D;${SPI实现类}</td>
+</tr>
+<tr>
+<td>Spring</td>
+<td>META-INF&#x2F;spring.factories</td>
+<td>${SPI接口全限定名}&#x3D;${SPI实现类}</td>
+</tr>
+</tbody></table>
+<p>对应示例为如下</p>
+<table>
+<thead>
+<tr>
+<th>框架</th>
+<th>配置文件路径</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK</td>
+<td>META-INF&#x2F;services&#x2F;ink.wuzk.examples.spi.Waiter</td>
+<td><code>ink.wuzk.examples.spi.Chinese</code></td>
+</tr>
+<tr>
+<td>Dubbo</td>
+<td>META-INF&#x2F;dubbo&#x2F;ink.wuzk.examples.spi.Waiter</td>
+<td><code>chinese=ink.wuzk.examples.spi.Chinese</code></td>
+</tr>
+<tr>
+<td>Spring</td>
+<td>META-INF&#x2F;spring.factories</td>
+<td><code>ink.wuzk.examples.spi.Waiter=ink.wuzk.examples.spi.Chinese</code></td>
+</tr>
+</tbody></table>
+<h3 id="加载调用"><a href="#加载调用" class="headerlink" title="加载调用"></a>加载调用</h3><p>有了相关实现配置就需要读取配置的工具，这里就需要加载器登场了，如前文所讲的，加载器读取对应配置装载<code>SPI</code>的实现，以下是三种加载器：</p>
+<table>
+<thead>
+<tr>
+<th>框架</th>
+<th>服务加载器</th>
+<th>加载形式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK</td>
+<td><code>java.util.ServiceLoader</code></td>
+<td>直接加载使用</td>
+</tr>
+<tr>
+<td>Dubbo</td>
+<td><code>org.apache.dubbo.common.extension.ExtensionLoader</code></td>
+<td>别名加载使用</td>
+</tr>
+<tr>
+<td>Spring</td>
+<td><code>org.springframework.core.io.support.SpringFactoriesLoader</code></td>
+<td>直接加载使用</td>
+</tr>
+</tbody></table>
+<p>本例中测试代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">jdk</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (Waiter waiter : ServiceLoader.load(Waiter.class)) &#123;</span><br><span class="line">        System.out.println(waiter.greet());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">dubbo</span><span class="params">()</span> &#123;</span><br><span class="line">    ExtensionLoader&lt;Waiter&gt; loader = ExtensionLoader.getExtensionLoader(Waiter.class);</span><br><span class="line">    <span class="type">Waiter</span> <span class="variable">chinese</span> <span class="operator">=</span> loader.getExtension(<span class="string">&quot;chinese&quot;</span>);</span><br><span class="line">    System.out.println(chinese.greet());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">spring</span><span class="params">()</span> &#123;</span><br><span class="line">    List&lt;Waiter&gt; waiters = SpringFactoriesLoader.loadFactories(Waiter.class, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">for</span> (Waiter waiter : waiters) &#123;</span><br><span class="line">        System.out.println(waiter.greet());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果新增了实现，只需按上诉方式新增实现的模块即可。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>本文主要探讨 <code>SPI</code> 的组成和设计概念，并用例子实践一番，尚未触及源码部分，推荐有时间的情况下观摩这三者的源码，希望能帮到大家。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"># Spring</a>
+              <a href="/tags/SPI/" rel="tag"># SPI</a>
+              <a href="/tags/Dubbo/" rel="tag"># Dubbo</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/08/14/2022/20220814/" rel="prev" title="JMeter HTTP 签名处理">
+                  <i class="fa fa-chevron-left"></i> JMeter HTTP 签名处理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/next-boot.js"></script>
+
+  
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.1.6/dist/mermaid.min.js","integrity":"sha256-ZfzwelSToHk5YAcr9wbXAmWgyn9Jyq08fSLrLhZE89w="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+
+</body>
+</html>
