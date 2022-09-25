@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/config.js"></script>
+
+    <meta name="description" content="前段时间接到一个安全等保的问题，其目的是开启 MySQL 日志记录，为此专门去看了看 MySQL到底有多少种日志记录，关于 MySQL 的日志记录在官方文档中有详细的介绍，这里做下简单的梳理介绍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL 日志配置">
+<meta property="og:url" content="https://www.wuzk.ink/2022/09/24/2022/20220924/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="前段时间接到一个安全等保的问题，其目的是开启 MySQL 日志记录，为此专门去看了看 MySQL到底有多少种日志记录，关于 MySQL 的日志记录在官方文档中有详细的介绍，这里做下简单的梳理介绍。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-24T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-09-24T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2022/09/24/2022/20220924/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2022/09/24/2022/20220924/","path":"2022/09/24/2022/20220924/","title":"MySQL 日志配置"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MySQL 日志配置 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%80%BB%E8%A7%88"><span class="nav-number">1.</span> <span class="nav-text">日志总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97"><span class="nav-number">2.</span> <span class="nav-text">错误日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="nav-number">3.</span> <span class="nav-text">通用查询日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97"><span class="nav-number">4.</span> <span class="nav-text">二进制日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="nav-number">5.</span> <span class="nav-text">慢查询日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E7%BB%A7%E6%97%A5%E5%BF%97"><span class="nav-number">6.</span> <span class="nav-text">中继日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E8%87%B3%E8%A1%A8"><span class="nav-number">7.</span> <span class="nav-text">输出至表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">8.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/09/24/2022/20220924/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MySQL 日志配置 | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL 日志配置
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-24T00:00:00+00:00">2022-09-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>前段时间接到一个安全等保的问题，其目的是开启 MySQL 日志记录，为此专门去看了看 MySQL到底有多少种日志记录，关于 MySQL 的日志记录在<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/server-logs.html">官方文档</a>中有详细的介绍，这里做下简单的梳理介绍。</p>
+<span id="more"></span>
+
+<h2 id="日志总览"><a href="#日志总览" class="headerlink" title="日志总览"></a>日志总览</h2><p>在<code>MySQL8.0</code>官网中 MySQL 有以下几类日志类型：</p>
+<table>
+<thead>
+<tr>
+<th>日志类型</th>
+<th>记录信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>错误日志</td>
+<td>启动、运行或停止 mysqld 时的问题</td>
+</tr>
+<tr>
+<td>通用查询日志</td>
+<td>已建立的客户端连接信息和从客户端收到的语句</td>
+</tr>
+<tr>
+<td>二进制日志</td>
+<td>更改数据的语句（也用于复制）</td>
+</tr>
+<tr>
+<td>中继日志</td>
+<td>从复制源服务器接收的数据更改</td>
+</tr>
+<tr>
+<td>慢查询日志</td>
+<td>输出执行时间超过 long_query_time 配置的查询</td>
+</tr>
+<tr>
+<td>DDL 日志（元数据日志</td>
+<td>DDL 语句执行的元数据操作</td>
+</tr>
+</tbody></table>
+<p>其中 <code>DDL日志</code> 由 MySQL 自行创建管理，没有开放给用户可配置使用，所以这里只介绍其它几种日志的配置。</p>
+<h2 id="错误日志"><a href="#错误日志" class="headerlink" title="错误日志"></a>错误日志</h2><p>官方术语 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/error-log.html">Error Log</a>，包含mysqld 启动和关闭时间的记录和诊断消息，例如在服务器启动和关闭期间以及在服务器运行期间发生的错误、警告和注释。</p>
+<p>开启错误日志需要配置 <code>log_error</code>  变量，该变量控制错误日志的输出目标，可以有如下两种</p>
+<ul>
+<li>stderr，输出至控制台</li>
+<li>文件路径，输出至指定的文件，如果文件名不带 <code>err</code> 后缀则自动追加 <code>err</code></li>
+</ul>
+<p>示例配置如下</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[msyqld]</span></span><br><span class="line"><span class="comment"># 指定输出文件路径</span></span><br><span class="line"><span class="attr">log_error</span>=/tmp/mysql</span><br></pre></td></tr></table></figure>
+
+<p>则可以在 <code>/tmp</code> 目录下找到 <code>mysql.err</code> 的文件</p>
+<h2 id="通用查询日志"><a href="#通用查询日志" class="headerlink" title="通用查询日志"></a>通用查询日志</h2><p>官方术语 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/query-log.html">General Query Log</a>，当客户端连接或断开连接时，服务器将信息写入此日志，并记录从客户端接收到的每个 SQL 语句。</p>
+<p>默认情况下，该日志为关闭状态，但如果怀疑客户端出现错误想确切了解客户端发送到mysqld的内容时，可以通过设置 <code>general_log</code> 进行开启，并通过<code>general_log_file</code>指定日志文件的名称</p>
+<p>如果没有为通用查询日志文件指定名称，则默认名称为 <code>host_name.log</code> ，输出至数据目录中，除非给出绝对路径名来指定不同的目录。</p>
+<p>示例配置如下</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[msyqld]</span></span><br><span class="line"><span class="comment"># 开启通用查询日志，值为 1 或 on</span></span><br><span class="line"><span class="attr">general_log</span>=<span class="number">1</span></span><br><span class="line"><span class="comment"># 指定输出文件路径</span></span><br><span class="line"><span class="attr">general_log_file</span>=/tmp/general.log</span><br></pre></td></tr></table></figure>
+
+<p>可以在 <code>/tmp/general.log</code> 中看到如下类似内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/usr/sbin/mysqld, Version: 8.0.27 (MySQL Community Server - GPL). started with:</span><br><span class="line">Tcp port: 3306  Unix socket: /var/run/mysqld/mysqld.sock</span><br><span class="line">Time                 Id Command    Argument</span><br><span class="line">2022-09-25T02:22:09.485028Z         8 Connect   root@192.168.66.101 on  using TCP/IP</span><br><span class="line">2022-09-25T02:22:09.631729Z         8 Query     SELECT NOW()</span><br></pre></td></tr></table></figure>
+
+<h2 id="二进制日志"><a href="#二进制日志" class="headerlink" title="二进制日志"></a>二进制日志</h2><p>官方术语 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/binary-log.html">Binary Log</a>，包含描述数据库更改的<code>事件</code>，例如表或者数据的<code>增删改</code>，有两个重要用途：</p>
+<ul>
+<li>主从复制，主库记录日志并发送给从库，从库解析重放日志，达到复制的目的</li>
+<li>数据恢复，数据恢复后可根据之前的日志重新同步至最新数据</li>
+</ul>
+<p>二进制日志有三种格式</p>
+<ul>
+<li>基于语句的 <code>STATEMENT</code><ul>
+<li>优点：只记录语句，日志内容小，存储和网络开销少</li>
+<li>缺点：一致性差</li>
+</ul>
+</li>
+<li>基于行数据 <code>ROW</code><ul>
+<li>优点：记录行数据，一致性强</li>
+<li>缺点：影响数据过多时，存储和网络开销大</li>
+</ul>
+</li>
+<li>以上两种的 <code>MIXED</code>，由 <code>MySQL</code><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/binary-log-mixed.html">规则</a>判断采用 <code>STATEMENT</code> 还是 <code>ROW</code></li>
+</ul>
+<p><a href="#%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97">通用查询日志</a>无法记录 <code>ROW</code> 类型的数据，因此在从库中重放的 <code>ROW</code> 和部分的 <code>MIXED</code> 将无法体现在通用查询日志中</p>
+<p>默认安装下开启，但如果是手动初始化数据目录则不会开启，此时可以通过配置环境变量<code>log-bin</code>开启，示例如下：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[msyqld]</span></span><br><span class="line"><span class="comment"># 5.7必须配置，8.0默认为1</span></span><br><span class="line"><span class="attr">server_id</span>=<span class="number">1</span></span><br><span class="line"><span class="comment"># 开启二进制日志</span></span><br><span class="line"><span class="attr">log_bin</span>=/tmp/mysql.bin</span><br><span class="line"><span class="comment"># 指定二进制日志格式，默认：ROW</span></span><br><span class="line"><span class="attr">binlog_format</span>=MIXED</span><br></pre></td></tr></table></figure>
+
+<h2 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h2><p>官方术语 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/slow-query-log.html">Slow Query Log</a>，记录执行时间超过 <code>long_query_time</code> 秒且至少 <code>min_examined_row_limit</code> 需要检查行的 SQL 语句组成。慢查询日志可用于查找需要很长时间执行的查询，是SQL优化追踪的好帮手。</p>
+<p>默认情况下，慢查询日志是关闭的，可通过 <code>slow_query_log</code> 开启，示例配置如下：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 开启慢查询日志，值：1 或 ON</span></span><br><span class="line"><span class="attr">slow_query_log</span>=<span class="number">1</span></span><br><span class="line"><span class="comment"># 指定输出文件</span></span><br><span class="line"><span class="attr">slow_query_log_file</span>=/tmp/mysql-slow.log</span><br><span class="line"><span class="comment"># 时间控制，单位秒，少于指定秒数的语句不被记录</span></span><br><span class="line"><span class="attr">long_query_time</span>=<span class="number">3</span></span><br><span class="line"><span class="comment"># 行数控制，少于指定行的慢查询不会被记录</span></span><br><span class="line"><span class="attr">min_examined_row_limit</span>=<span class="number">0</span></span><br><span class="line"><span class="comment"># 记录未使用索引语句，默认关</span></span><br><span class="line"><span class="attr">log_queries_not_using_indexes</span>=<span class="literal">ON</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="中继日志"><a href="#中继日志" class="headerlink" title="中继日志"></a>中继日志</h2><p>官方术语 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/replica-logs-relaylog.html">Relay Log</a>，与二进制日志一样，由一组编号的文件组成，其中包含描述数据库更改的事件，以及一个包含所有使用的中继日志文件名称的索引文件。</p>
+<p>中继日志文件的默认位置是数据目录。默认的中继日志文件和中继日志索引文件名和位置可以分别用 <code>relay_log</code> 和 <code>relay_log_index</code> 系统变量覆盖，这里暂不做介绍。</p>
+<h2 id="输出至表"><a href="#输出至表" class="headerlink" title="输出至表"></a>输出至表</h2><p><a href="#%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97">通用查询日志</a>、<a href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97">慢查询日志</a>除了输出日志至文件也支持写入表中存储，示例配置如下：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定输出形式 TABLE,FILE,NONE</span></span><br><span class="line"><span class="attr">log_output</span>=TABLE</span><br><span class="line"><span class="comment"># 开启通用查询日志</span></span><br><span class="line"><span class="attr">general_log</span>=<span class="number">1</span></span><br><span class="line"><span class="comment"># 开启慢查询日志</span></span><br><span class="line"><span class="attr">slow_query_log</span>=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>通用查询日志将存放在 <code>mysql.general_log</code> ，慢查询日志将存放在 <code>mysql.slow_log</code></p>
+<p><code>log_output</code>可以多选配置，可同时支持文件和表格存储</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">log_output</span>=TABLE,FILE</span><br><span class="line"><span class="comment"># 开启通用查询日志</span></span><br><span class="line"><span class="attr">general_log</span>=<span class="number">1</span></span><br><span class="line"><span class="attr">general_log_file</span>=/tmp/general.log</span><br><span class="line"><span class="comment"># 开启慢查询日志</span></span><br><span class="line"><span class="attr">slow_query_log</span>=<span class="number">1</span></span><br><span class="line"><span class="attr">slow_query_log_file</span>=/tmp/mysql-slow.log</span><br></pre></td></tr></table></figure>
+
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>关于 <code>MySQL</code> 日志部分算是简单的归纳下，日志作为日常工作重要的排错调优手段，了解 <code>MySQL</code> 日志还是很有必要，希望这篇博客可以帮助到大家。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/09/04/2022/20220904/" rel="prev" title="创建可扩展程序">
+                  <i class="fa fa-chevron-left"></i> 创建可扩展程序
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/next-boot.js"></script>
+
+  
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.1.6/dist/mermaid.min.js","integrity":"sha256-ZfzwelSToHk5YAcr9wbXAmWgyn9Jyq08fSLrLhZE89w="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.13.0/source/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+
+</body>
+</html>
