@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/config.js"></script>
+
+    <meta name="description" content="一直以来对 Vim 的使用都停留在简单使用，最近突然对远程开发有了些兴趣，便想着是不是可以将 Vim 打造成一个 IDE 来使用，找了找相关的资料发现可行，于是便有了以下折腾的记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="将 Vim 打造成轻量级IDE">
+<meta property="og:url" content="https://www.wuzk.ink/2022/10/16/2022/20221016/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="一直以来对 Vim 的使用都停留在简单使用，最近突然对远程开发有了些兴趣，便想着是不是可以将 Vim 打造成一个 IDE 来使用，找了找相关的资料发现可行，于是便有了以下折腾的记录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-16T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-10-16T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Vim">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2022/10/16/2022/20221016/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2022/10/16/2022/20221016/","path":"2022/10/16/2022/20221016/","title":"将 Vim 打造成轻量级IDE"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>将 Vim 打造成轻量级IDE | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#IDE-%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">IDE 定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">插件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E4%BB%B6%E7%AE%A1%E7%90%86"><span class="nav-number">2.1.</span> <span class="nav-text">插件管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E4%BB%B6%E9%80%89%E7%94%A8"><span class="nav-number">2.2.</span> <span class="nav-text">插件选用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%AE%9A%E4%B9%89"><span class="nav-number">3.</span> <span class="nav-text">配置定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%92%E4%BB%B6%E7%9A%84%E6%8F%92%E4%BB%B6"><span class="nav-number">4.</span> <span class="nav-text">插件的插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">5.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">73</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2022/10/16/2022/20221016/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="将 Vim 打造成轻量级IDE | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          将 Vim 打造成轻量级IDE
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-16 00:00:00" itemprop="dateCreated datePublished" datetime="2022-10-16T00:00:00+00:00">2022-10-16</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>一直以来对 Vim 的使用都停留在简单使用，最近突然对远程开发有了些兴趣，便想着是不是可以将 Vim 打造成一个 IDE 来使用，找了找相关的资料发现可行，于是便有了以下折腾的记录。</p>
+<span id="more"></span>
+
+<h2 id="IDE-定义"><a href="#IDE-定义" class="headerlink" title="IDE 定义"></a>IDE 定义</h2><p>在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-cn/%E9%9B%86%E6%88%90%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83">维基百科</a> 中 IDE 全称 <code>Integrated Development Environment</code> 意为集成开发环境，可以辅助编写源代码文本、并编译打包成为可用的程序。</p>
+<p>Vim 作为文本编辑器是足够的，但作为 IDE 则缺乏相应的能力，但好在 Vim 作为一款古老编辑器依然在更新迭代，其插件特性为其带来成为 IDE 的无限可能。</p>
+<h2 id="插件安装"><a href="#插件安装" class="headerlink" title="插件安装"></a>插件安装</h2><h3 id="插件管理"><a href="#插件管理" class="headerlink" title="插件管理"></a>插件管理</h3><p>为了保证插件使用的干净有序，插件管理工具是必要的，目前常用的管理工具是<a target="_blank" rel="noopener" href="https://github.com/junegunn/vim-plug">vim-plug</a>，安装步骤如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -fLo ~/.vim/autoload/plug.vim --create-dirs \</span><br><span class="line">    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim</span><br></pre></td></tr></table></figure>
+
+<p>由于国内网络问题，可能会出现 <code>plug.vim</code> 文件下载失败的情况，有条件的同学可以在 github 上将对应文件提前下载下来，之后放在对应目录。</p>
+<h3 id="插件选用"><a href="#插件选用" class="headerlink" title="插件选用"></a>插件选用</h3><p>有了插件管理工具，该安装什么插件呢？这里推荐使用 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a>，它有如下一些特性</p>
+<ul>
+<li>快捷高效，使用 node 做异步处理，提示和响应比较快</li>
+<li>扩展性强，拥有插件机制且生态繁荣。是的你没看错，它作为一个插件 内部还能支持插件，套娃了属于是</li>
+</ul>
+<p>如何用安装使用它呢？在 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> 官方有一个<a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim">安装教程</a>，可以看看，这里粗略介绍下</p>
+<p>由于 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> 使用了node 作为运行和插件机制，所以需要安装配置 node 环境，下载 node 安装包，将 node 程序目录添加至 PATH 中</p>
+<p>接着编辑 ~&#x2F;.vimrc 或者 ~&#x2F;.vim&#x2F;vimrc，将 <a target="_blank" rel="noopener" href="https://github.com/junegunn/vim-plug">vim-plug</a> 配置插件 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> ，示例如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">call plug#begin()</span><br><span class="line">Plug &#x27;neoclide/coc.nvim&#x27;, &#123;&#x27;branch&#x27;: &#x27;release&#x27;&#125;</span><br><span class="line">call plug#end()</span><br></pre></td></tr></table></figure>
+
+<p>保存退出后打开任意一个 Vim 窗口，用命令模式 <code>:PlugInstall</code> 进行插件安装，此时会弹出提示框报告安装进度，待安装完毕后退出即可。</p>
+<p>关于<a target="_blank" rel="noopener" href="https://github.com/junegunn/vim-plug">vim-plug</a> 的其他命令还有</p>
+<ul>
+<li>插件清理 <code>:PlugClean</code></li>
+<li>插件升级 <code>:PlugUpdate</code></li>
+</ul>
+<h2 id="配置定义"><a href="#配置定义" class="headerlink" title="配置定义"></a>配置定义</h2><p>安装之后的使用是生涩的不够丝滑，问题在于我们缺乏对 Vim 的调教配置，这方面 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> 官方很是贴心的为新手用户提供了一份样板配置，同样的编辑 ~&#x2F;.vimrc 或 ~&#x2F;.vim&#x2F;vimrc，在文件后方追加如下官方的样板配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br></pre></td><td class="code"><pre><span class="line">&quot; Some servers have issues with backup files, see #649.</span><br><span class="line">set nobackup</span><br><span class="line">set nowritebackup</span><br><span class="line"></span><br><span class="line">&quot; Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable</span><br><span class="line">&quot; delays and poor user experience.</span><br><span class="line">set updatetime=300</span><br><span class="line"></span><br><span class="line">&quot; Always show the signcolumn, otherwise it would shift the text each time</span><br><span class="line">&quot; diagnostics appear/become resolved.</span><br><span class="line">set signcolumn=yes</span><br><span class="line"></span><br><span class="line">&quot; Use tab for trigger completion with characters ahead and navigate.</span><br><span class="line">&quot; NOTE: There&#x27;s always complete item selected by default, you may want to enable</span><br><span class="line">&quot; no select by `&quot;suggest.noselect&quot;: true` in your configuration file.</span><br><span class="line">&quot; NOTE: Use command &#x27;:verbose imap &lt;tab&gt;&#x27; to make sure tab is not mapped by</span><br><span class="line">&quot; other plugin before putting this into your config.</span><br><span class="line">inoremap &lt;silent&gt;&lt;expr&gt; &lt;TAB&gt;</span><br><span class="line">      \ coc#pum#visible() ? coc#pum#next(1) :</span><br><span class="line">      \ CheckBackspace() ? &quot;\&lt;Tab&gt;&quot; :</span><br><span class="line">      \ coc#refresh()</span><br><span class="line">inoremap &lt;expr&gt;&lt;S-TAB&gt; coc#pum#visible() ? coc#pum#prev(1) : &quot;\&lt;C-h&gt;&quot;</span><br><span class="line"></span><br><span class="line">&quot; Make &lt;CR&gt; to accept selected completion item or notify coc.nvim to format</span><br><span class="line">&quot; &lt;C-g&gt;u breaks current undo, please make your own choice.</span><br><span class="line">inoremap &lt;silent&gt;&lt;expr&gt; &lt;CR&gt; coc#pum#visible() ? coc#pum#confirm()</span><br><span class="line">                              \: &quot;\&lt;C-g&gt;u\&lt;CR&gt;\&lt;c-r&gt;=coc#on_enter()\&lt;CR&gt;&quot;</span><br><span class="line"></span><br><span class="line">function! CheckBackspace() abort</span><br><span class="line">  let col = col(&#x27;.&#x27;) - 1</span><br><span class="line">  return !col || getline(&#x27;.&#x27;)[col - 1]  =~# &#x27;\s&#x27;</span><br><span class="line">endfunction</span><br><span class="line"></span><br><span class="line">&quot; Use &lt;c-space&gt; to trigger completion.</span><br><span class="line">if has(&#x27;nvim&#x27;)</span><br><span class="line">  inoremap &lt;silent&gt;&lt;expr&gt; &lt;c-space&gt; coc#refresh()</span><br><span class="line">else</span><br><span class="line">  inoremap &lt;silent&gt;&lt;expr&gt; &lt;c-@&gt; coc#refresh()</span><br><span class="line">endif</span><br><span class="line"></span><br><span class="line">&quot; Use `[g` and `]g` to navigate diagnostics</span><br><span class="line">&quot; Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.</span><br><span class="line">nmap &lt;silent&gt; [g &lt;Plug&gt;(coc-diagnostic-prev)</span><br><span class="line">nmap &lt;silent&gt; ]g &lt;Plug&gt;(coc-diagnostic-next)</span><br><span class="line"></span><br><span class="line">&quot; GoTo code navigation.</span><br><span class="line">nmap &lt;silent&gt; gd &lt;Plug&gt;(coc-definition)</span><br><span class="line">nmap &lt;silent&gt; gy &lt;Plug&gt;(coc-type-definition)</span><br><span class="line">nmap &lt;silent&gt; gi &lt;Plug&gt;(coc-implementation)</span><br><span class="line">nmap &lt;silent&gt; gr &lt;Plug&gt;(coc-references)</span><br><span class="line"></span><br><span class="line">&quot; Use K to show documentation in preview window.</span><br><span class="line">nnoremap &lt;silent&gt; K :call ShowDocumentation()&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">function! ShowDocumentation()</span><br><span class="line">  if CocAction(&#x27;hasProvider&#x27;, &#x27;hover&#x27;)</span><br><span class="line">    call CocActionAsync(&#x27;doHover&#x27;)</span><br><span class="line">  else</span><br><span class="line">    call feedkeys(&#x27;K&#x27;, &#x27;in&#x27;)</span><br><span class="line">  endif</span><br><span class="line">endfunction</span><br><span class="line"></span><br><span class="line">&quot; Highlight the symbol and its references when holding the cursor.</span><br><span class="line">autocmd CursorHold * silent call CocActionAsync(&#x27;highlight&#x27;)</span><br><span class="line"></span><br><span class="line">&quot; Symbol renaming.</span><br><span class="line">nmap &lt;leader&gt;rn &lt;Plug&gt;(coc-rename)</span><br><span class="line"></span><br><span class="line">&quot; Formatting selected code.</span><br><span class="line">xmap &lt;leader&gt;f  &lt;Plug&gt;(coc-format-selected)</span><br><span class="line">nmap &lt;leader&gt;f  &lt;Plug&gt;(coc-format-selected)</span><br><span class="line"></span><br><span class="line">augroup mygroup</span><br><span class="line">  autocmd!</span><br><span class="line">  &quot; Setup formatexpr specified filetype(s).</span><br><span class="line">  autocmd FileType typescript,json setl formatexpr=CocAction(&#x27;formatSelected&#x27;)</span><br><span class="line">  &quot; Update signature help on jump placeholder.</span><br><span class="line">  autocmd User CocJumpPlaceholder call CocActionAsync(&#x27;showSignatureHelp&#x27;)</span><br><span class="line">augroup end</span><br><span class="line"></span><br><span class="line">&quot; Applying codeAction to the selected region.</span><br><span class="line">&quot; Example: `&lt;leader&gt;aap` for current paragraph</span><br><span class="line">xmap &lt;leader&gt;a  &lt;Plug&gt;(coc-codeaction-selected)</span><br><span class="line">nmap &lt;leader&gt;a  &lt;Plug&gt;(coc-codeaction-selected)</span><br><span class="line"></span><br><span class="line">&quot; Remap keys for applying codeAction to the current buffer.</span><br><span class="line">nmap &lt;leader&gt;ac  &lt;Plug&gt;(coc-codeaction)</span><br><span class="line">&quot; Apply AutoFix to problem on the current line.</span><br><span class="line">nmap &lt;leader&gt;qf  &lt;Plug&gt;(coc-fix-current)</span><br><span class="line"></span><br><span class="line">&quot; Run the Code Lens action on the current line.</span><br><span class="line">nmap &lt;leader&gt;cl  &lt;Plug&gt;(coc-codelens-action)</span><br><span class="line"></span><br><span class="line">&quot; Map function and class text objects</span><br><span class="line">&quot; NOTE: Requires &#x27;textDocument.documentSymbol&#x27; support from the language server.</span><br><span class="line">xmap if &lt;Plug&gt;(coc-funcobj-i)</span><br><span class="line">omap if &lt;Plug&gt;(coc-funcobj-i)</span><br><span class="line">xmap af &lt;Plug&gt;(coc-funcobj-a)</span><br><span class="line">omap af &lt;Plug&gt;(coc-funcobj-a)</span><br><span class="line">xmap ic &lt;Plug&gt;(coc-classobj-i)</span><br><span class="line">omap ic &lt;Plug&gt;(coc-classobj-i)</span><br><span class="line">xmap ac &lt;Plug&gt;(coc-classobj-a)</span><br><span class="line">omap ac &lt;Plug&gt;(coc-classobj-a)</span><br><span class="line"></span><br><span class="line">&quot; Remap &lt;C-f&gt; and &lt;C-b&gt; for scroll float windows/popupsif has(&#x27;nvim-0.4.0&#x27;) || has(&#x27;patch-8.2.0750&#x27;)</span><br><span class="line">if has(&#x27;nvim-0.4.0&#x27;) || has(&#x27;patch-8.2.0750&#x27;)</span><br><span class="line">  nnoremap &lt;silent&gt;&lt;nowait&gt;&lt;expr&gt; &lt;C-b&gt; coc#float#has_scroll() ? coc#float#scroll(0) : &quot;\&lt;C-b&gt;&quot;</span><br><span class="line">  inoremap &lt;silent&gt;&lt;nowait&gt;&lt;expr&gt; &lt;C-f&gt; coc#float#has_scroll() ? &quot;\&lt;c-r&gt;=coc#float#scroll(1)\&lt;cr&gt;&quot; : &quot;\&lt;Right&gt;&quot;</span><br><span class="line">  inoremap &lt;silent&gt;&lt;nowait&gt;&lt;expr&gt; &lt;C-b&gt; coc#float#has_scroll() ? &quot;\&lt;c-r&gt;=coc#float#scroll(0)\&lt;cr&gt;&quot; : &quot;\&lt;Left&gt;&quot;</span><br><span class="line">  vnoremap &lt;silent&gt;&lt;nowait&gt;&lt;expr&gt; &lt;C-f&gt; coc#float#has_scroll() ? coc#float#scroll(1) : &quot;\&lt;C-f&gt;&quot;</span><br><span class="line">  vnoremap &lt;silent&gt;&lt;nowait&gt;&lt;expr&gt; &lt;C-b&gt; coc#float#has_scroll() ? coc#float#scroll(0) : &quot;\&lt;C-b&gt;&quot;</span><br><span class="line">endif</span><br><span class="line"></span><br><span class="line">&quot; Use CTRL-S for selections ranges.</span><br><span class="line">&quot; Requires &#x27;textDocument/selectionRange&#x27; support of language server.</span><br><span class="line">nmap &lt;silent&gt; &lt;C-s&gt; &lt;Plug&gt;(coc-range-select)</span><br><span class="line">xmap &lt;silent&gt; &lt;C-s&gt; &lt;Plug&gt;(coc-range-select)</span><br><span class="line"></span><br><span class="line">&quot; Add `:Format` command to format current buffer.</span><br><span class="line">command! -nargs=0 Format :call CocActionAsync(&#x27;format&#x27;)</span><br><span class="line"></span><br><span class="line">&quot; Add `:Fold` command to fold current buffer.</span><br><span class="line">command! -nargs=? Fold :call     CocAction(&#x27;fold&#x27;, &lt;f-args&gt;)</span><br><span class="line"></span><br><span class="line">&quot; Add `:OR` command for organize imports of the current buffer.</span><br><span class="line">command! -nargs=0 OR   :call     CocActionAsync(&#x27;runCommand&#x27;, &#x27;editor.action.organizeImport&#x27;)</span><br><span class="line"></span><br><span class="line">&quot; Add (Neo)Vim&#x27;s native statusline support.</span><br><span class="line">&quot; NOTE: Please see `:h coc-status` for integrations with external plugins that</span><br><span class="line">&quot; provide custom statusline: lightline.vim, vim-airline.</span><br><span class="line">set statusline^=%&#123;coc#status()&#125;%&#123;get(b:,&#x27;coc_current_function&#x27;,&#x27;&#x27;)&#125;</span><br><span class="line"></span><br><span class="line">&quot; Mappings for CoCList</span><br><span class="line">&quot; Show all diagnostics.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;a  :&lt;C-u&gt;CocList diagnostics&lt;cr&gt;</span><br><span class="line">&quot; Manage extensions.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;e  :&lt;C-u&gt;CocList extensions&lt;cr&gt;</span><br><span class="line">&quot; Show commands.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;c  :&lt;C-u&gt;CocList commands&lt;cr&gt;</span><br><span class="line">&quot; Find symbol of current document.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;o  :&lt;C-u&gt;CocList outline&lt;cr&gt;</span><br><span class="line">&quot; Search workspace symbols.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;s  :&lt;C-u&gt;CocList -I symbols&lt;cr&gt;</span><br><span class="line">&quot; Do default action for next item.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;j  :&lt;C-u&gt;CocNext&lt;CR&gt;</span><br><span class="line">&quot; Do default action for previous item.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;k  :&lt;C-u&gt;CocPrev&lt;CR&gt;</span><br><span class="line">&quot; Resume latest coc list.</span><br><span class="line">nnoremap &lt;silent&gt;&lt;nowait&gt; &lt;space&gt;p  :&lt;C-u&gt;CocListResume&lt;CR&gt;</span><br></pre></td></tr></table></figure>
+
+<p>即可实现自动弹窗选中以及一些快捷键的绑定，配置比较长虽然有注释但可能有些人看不太懂其中的配置含义，这里挑几个典型简单介绍下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap &lt;silent&gt; gd &lt;Plug&gt;(coc-definition) </span><br></pre></td></tr></table></figure>
+
+<p>此配置意为在普通模式下输入 <code>gd</code> 可以跳转到定义部分</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot; Add `:Format` command to format current buffer</span><br><span class="line">command! -nargs=0 Format :call CocActionAsync(&#x27;format&#x27;) </span><br></pre></td></tr></table></figure>
+
+<p>此配置含义意为在命令模式中 <code>：Format</code>，执行后会触发 Coc 异步的格式化任务</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot; Symbol renaming.</span><br><span class="line">nmap &lt;leader&gt;rn &lt;Plug&gt;(coc-rename)</span><br></pre></td></tr></table></figure>
+
+<p>此配置意为普通模式下输入<code>\rn</code> 重命名符号</p>
+<p>关于 Vim 的配置部分可以再参考参考官方文档进行深入的学习，这里不做过多的赘述。</p>
+<h2 id="插件的插件"><a href="#插件的插件" class="headerlink" title="插件的插件"></a>插件的插件</h2><p>前面讲了 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> 自己同样支持插件，这其中不乏一些优秀的插件，其插件的配置和列表可以<a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim/wiki/Using-coc-extensions">插件支持</a>中找到。这里列举下用的一些插件，如</p>
+<ul>
+<li><code>coc-snippets</code> 其包含大量常用的提示片段，弹窗使用舒适</li>
+<li><code>cos-git</code> 提示文件在git中的版本管理状态</li>
+<li><code>coc-explorer</code> 文件管理器，可以在侧边栏展示文件，也可以搜索管理文件</li>
+<li><code>coc-sh</code> 编写 shell 脚本提示舒适</li>
+<li><code>coc-json</code> 编写 json 脚本提示舒适</li>
+<li><code>coc-go</code> 基于 gopls 的提示，用来开发 go，也是我捣鼓的主要目的</li>
+</ul>
+<p>关于 <a target="_blank" rel="noopener" href="https://github.com/neoclide/coc.nvim">coc.nvim</a> 插件有如下命令，在 Vim 命令模式下</p>
+<ul>
+<li>插件安装 <code>:CocInstall coc-json</code></li>
+<li>插件升级 <code>:CocUpdate</code></li>
+<li>插件卸载<code>:CocUninstall coc-json</code></li>
+</ul>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>其实在18年的时候写过一篇关于<a href="/2018/04/07/2018/20180407/">Vim</a>的文章，现在回头看显得无比稚嫩，那个时候仅仅掌握了对 Vim 的基本使用命令，只算是踏入了一只脚在 Vim 中，如今结合插件和自定义的配置才算是真正的打开了 Vim 的大门，希望这篇文章能帮助到你。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Vim/" rel="tag"># Vim</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/09/24/2022/20220924/" rel="prev" title="MySQL 日志配置">
+                  <i class="fa fa-chevron-left"></i> MySQL 日志配置
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">吴志康</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/next-boot.js"></script>
+
+  
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@9.1.7/dist/mermaid.min.js","integrity":"sha256-G58AID1YoX5YaEtWfXSI0VLrZ6N4kvNvwg0BI8zUFxE="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.13.1/source/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+
+</body>
+</html>
