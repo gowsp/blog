@@ -3,6 +3,7 @@ avatar:
   url: /images/avatar.png
 custom_file_path:
   head: source/_data/head.njk
+  sidebar: source/_data/sidebar.njk
 favicon:
   small: /images/favicon-16x16.png
   medium: /images/favicon-32x32.png
