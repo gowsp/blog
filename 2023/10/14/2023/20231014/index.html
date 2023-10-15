@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="manifest" href="/images/site.webmanifest">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/pace-js@1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://unpkg.com/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.wuzk.ink","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/config.js"></script>
+
+    <meta name="description" content="前段时间在微信里接触到的一款名为 X袋奇兵 小游戏，玩了下还挺上头，不过玩了两天便觉得就有些浪费时间，于是便动起了逆向的心思，实现挂机自动操作，最后发现确实可行，这里简单记录下探索的过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="X袋奇兵 游戏逆向">
+<meta property="og:url" content="https://www.wuzk.ink/2023/10/14/2023/20231014/index.html">
+<meta property="og:site_name" content="醉卧草庐听风雨">
+<meta property="og:description" content="前段时间在微信里接触到的一款名为 X袋奇兵 小游戏，玩了下还挺上头，不过玩了两天便觉得就有些浪费时间，于是便动起了逆向的心思，实现挂机自动操作，最后发现确实可行，这里简单记录下探索的过程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-10-14T00:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-14T00:00:00.000Z">
+<meta property="article:author" content="吴志康">
+<meta property="article:tag" content="Web">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.wuzk.ink/2023/10/14/2023/20231014/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.wuzk.ink/2023/10/14/2023/20231014/","path":"2023/10/14/2023/20231014/","title":"X袋奇兵 游戏逆向"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>X袋奇兵 游戏逆向 | 醉卧草庐听风雨</title>
+  
+
+
+
+
+
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5016197333022906" crossorigin="anonymous"></script>
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">醉卧草庐听风雨</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">君子藏器于身，待时而动</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">总体流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.</span> <span class="nav-text">源码定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">协议分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%BF%BB%E8%AF%91"><span class="nav-number">4.</span> <span class="nav-text">代码翻译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%BB%E8%8A%B1%E6%8E%A5%E6%9C%A8"><span class="nav-number">5.</span> <span class="nav-text">移花接木</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">6.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="吴志康"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">吴志康</p>
+  <div class="site-description" itemprop="description">以不会为借口，你将一无所获</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">81</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gowsp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gowsp" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wutianjue@gmail.com" title="E-Mail → mailto:wutianjue@gmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.wuzk.ink/2023/10/14/2023/20231014/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="吴志康">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="醉卧草庐听风雨">
+      <meta itemprop="description" content="以不会为借口，你将一无所获">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="X袋奇兵 游戏逆向 | 醉卧草庐听风雨">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          X袋奇兵 游戏逆向
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-10-14 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-14T00:00:00+00:00">2023-10-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>前段时间在微信里接触到的一款名为 X袋奇兵 小游戏，玩了下还挺上头，不过玩了两天便觉得就有些浪费时间，于是便动起了逆向的心思，实现挂机自动操作，最后发现确实可行，这里简单记录下探索的过程。</p>
+<span id="more"></span>
+
+<h2 id="总体流程"><a href="#总体流程" class="headerlink" title="总体流程"></a>总体流程</h2><p>总的过程可以抽象为以下几部分</p>
+<ul>
+<li>源码定位</li>
+<li>协议分析</li>
+<li>代码翻译</li>
+</ul>
+<p>下面就来一一介绍</p>
+<h2 id="源码定位"><a href="#源码定位" class="headerlink" title="源码定位"></a>源码定位</h2><p>一开始接触到 X袋奇兵 是在微信这个封闭的环境里，要找到它的源码着实有些费劲，于是在网上找了下，发现它是有网页版的。嘿嘿，既然有网页版那一切都好办了。</p>
+<p>开启开发者模式，打开它的网页入口，登入游戏，查看网络控制台，观察请求，可以发现有一堆的请求，不过不用慌，一般这种页游和后台会有个长链接进行消息协议交互，查看 <code>Network</code> <code>Ws</code> 一栏会发现两个 Websocket 连接，那么恭喜你找到逆向的钥匙。为什么说找到了钥匙？因为在开发者模式下任何网络请求都可以通过 <code>initiator</code> 找到其调用的 js 源码文件位置。</p>
+<p>观察两个 Ws 请求会发现其中一个是消息格式是 text类型的 json， 另外一个则是二进制协议，等待一会儿会发现，json 和频道聊天是对应上的，那么也意味着二进制协议就是对应与游戏后台交互的功能协议，单击二进制连接所在的 <code>initiator</code> 便可以跟踪到源代码，类似如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">_webSocket</span> = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="variable language_">this</span>.<span class="property">_connectHost</span>),</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">enabledBinaryProtocol</span> &amp;&amp; (<span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="property">binaryType</span> = <span class="string">&quot;arraybuffer&quot;</span>),</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="property">onopen</span> = <span class="variable language_">this</span>.<span class="property">onOpen</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>),</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="property">onclose</span> = <span class="variable language_">this</span>.<span class="property">onClose</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>),</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="property">onmessage</span> = <span class="variable language_">this</span>.<span class="property">onMessage</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>),</span><br></pre></td></tr></table></figure>
+
+<p>此时可以把此代码文件 <code>index.xxxx.js</code> 的文件，通过右键保存至本地进行离线分析。</p>
+<h2 id="协议分析"><a href="#协议分析" class="headerlink" title="协议分析"></a>协议分析</h2><p>拿捏了消息接收和发送的通道，就可以顺藤摸瓜开始对通信协议进行解析。已知 <code>_webSocket</code> 成员变量，稍微了解下前端就会可以知道，前端的 Wensocket 类型发送函数是 <code>send</code>， 直接在源码里搜 <code>_webSocket.send(</code>，会找到两处而且都是在一个声明函数里</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">e.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">send</span> = <span class="keyword">function</span>(<span class="params">e, t</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> o, a;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">void</span> <span class="number">0</span> === t &amp;&amp; (t = !<span class="number">1</span>),</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_states</span> === d.<span class="property">SocketStates</span>.<span class="property">CONNECTED</span>)</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">enabledBinaryProtocol</span>) &#123;</span><br><span class="line">                <span class="keyword">var</span> i = <span class="literal">null</span></span><br><span class="line">                  , n = <span class="string">&quot;JSON&quot;</span>;</span><br><span class="line">                r.<span class="title function_">log</span>(<span class="string">&quot;(Socket,Debug)&quot;</span>, e.<span class="property">c</span>, <span class="literal">null</span> === (a = <span class="literal">null</span> === (o = e.<span class="property">binaryPack</span>) || <span class="keyword">void</span> <span class="number">0</span> === o ? <span class="keyword">void</span> <span class="number">0</span> : o.<span class="property">body</span>) || <span class="keyword">void</span> <span class="number">0</span> === a ? <span class="keyword">void</span> <span class="number">0</span> : a.<span class="property">format</span>, e.<span class="property">_pb_flag</span>),</span><br><span class="line">                e.<span class="property">_pb_flag</span> ? (i = p.<span class="property">BinaryMsgBuilder</span>.<span class="title function_">buildBinaryPack</span>(e),</span><br><span class="line">                n = <span class="string">&quot;ProtoBuf&quot;</span>) : i = p.<span class="property">BinaryMsgBuilder</span>.<span class="title function_">buildJsonPack</span>(e),</span><br><span class="line">                <span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="title function_">send</span>(i),</span><br><span class="line">                t || u.<span class="property">SocketDebugger</span>.<span class="title function_">trace</span>(e.<span class="property">c</span>, <span class="title class_">Number</span>(e.<span class="property">o</span>), e, i.<span class="property">byteLength</span>, u.<span class="property">SocketEventNames</span>.<span class="property">REQ</span>, <span class="string">&quot;(&quot;</span> + n + <span class="string">&quot;) 发送请求&quot;</span>)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">var</span> s = <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(e);</span><br><span class="line">                <span class="variable language_">this</span>.<span class="property">_webSocket</span>.<span class="title function_">send</span>(s),</span><br><span class="line">                t || u.<span class="property">SocketDebugger</span>.<span class="title function_">trace</span>(e.<span class="property">c</span>, <span class="title class_">Number</span>(e.<span class="property">o</span>), s, s.<span class="property">length</span>, u.<span class="property">SocketEventNames</span>.<span class="property">REQ</span>, <span class="string">&quot;(O) 发送请求&quot;</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">            r.<span class="title function_">error</span>(e)</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过前面对 Ws 消息观察已经知道，消息内容为二进制格式，所以着重分析 <code>enabledBinaryProtocol</code> 中的逻辑，这里需要用到开发者模式中的 <code>log point</code> 故名思意为日志断点，用于打印调试信息，我们在 <code>this._webSocket.send(i),</code> 行对着左边的断点栏添加日志断点，内容为 <code>i, e</code>，再切到 <code>Console</code> 可以看到类似如下的调试内容</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ArrayBuffer &#123;c: 0, o: &#x27;497&#x27;, p: &#123;…&#125;, _pb_flag: false&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时我们操作游戏内容，如帮助盟友，查看雷达任务都会触发相关的发送不同的请求，可以确认此处就是发送请求的位置，接着我们需要搞清楚请求是如何被包装成二进制形式的，观察代码会发现发送的数据 i 在上一行被包装处理了，逻辑如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">e.<span class="property">_pb_flag</span> ? </span><br><span class="line">(i = p.<span class="property">BinaryMsgBuilder</span>.<span class="title function_">buildBinaryPack</span>(e), n = <span class="string">&quot;ProtoBuf&quot;</span>) </span><br><span class="line">: </span><br><span class="line">i = p.<span class="property">BinaryMsgBuilder</span>.<span class="title function_">buildJsonPack</span>(e)</span><br></pre></td></tr></table></figure>
+
+<p>这里可以看到 <code>i</code> 会根据事件 <code>_pb_flag</code> 类型不同进行编码</p>
+<ul>
+<li><code>true</code> 时使用 <code>p.BinaryMsgBuilder.buildBinaryPack</code> 编码</li>
+<li><code>false</code> 时使用 <code>p.BinaryMsgBuilder.buildJsonPack</code> 编码</li>
+</ul>
+<p><code>Console</code> 日志会发现基本所有的事件都 <code>_pb_flag</code> 都是 <code>false</code>，因此直接在源码中 <code>buildJsonPack</code>，会找到如下代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> e.<span class="property">buildJsonPack</span> = <span class="keyword">function</span>(<span class="params">e</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> t = <span class="variable language_">this</span>.<span class="title function_">getUtf8Bytes</span>(<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(e.<span class="property">p</span>));</span><br><span class="line">    <span class="keyword">return</span> c.<span class="property">BinaryBuffer</span>.<span class="title function_">createPack</span>(&#123;</span><br><span class="line">        <span class="attr">head</span>: &#123;</span><br><span class="line">            <span class="attr">c</span>: e.<span class="property">c</span>,</span><br><span class="line">            <span class="attr">o</span>: <span class="title class_">Number</span>(e.<span class="property">o</span>)</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">body</span>: &#123;</span><br><span class="line">            <span class="attr">format</span>: c.<span class="property">BinaryDataPackFormat</span>.<span class="property">JSON</span>,</span><br><span class="line">            <span class="attr">bytes</span>: t</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码逻辑也比较简单易懂，把事件 <code>e</code> 转成 json 变成 utf8 字节，打包进一个有 <code>head</code> <code>body</code> 两部分的数据结构，再通过 <code>c.BinaryBuffer.createPack</code> 编码完成，接着搜这个函数名可以找到如下代码段</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">e.<span class="property">createPack</span> = <span class="keyword">function</span>(<span class="params">e, t</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> a, r;</span><br><span class="line">    <span class="keyword">void</span> <span class="number">0</span> === t &amp;&amp; (t = <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">var</span> n = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (!e)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    (n = (<span class="literal">null</span> === (r = <span class="literal">null</span> === (a = e.<span class="property">body</span>) || <span class="keyword">void</span> <span class="number">0</span> === a ? <span class="keyword">void</span> <span class="number">0</span> : a.<span class="property">bytes</span>) || <span class="keyword">void</span> <span class="number">0</span> === r ? <span class="keyword">void</span> <span class="number">0</span> : r.<span class="property">byteLength</span>) || <span class="number">0</span>) &gt; <span class="number">0</span> &amp;&amp; (n += <span class="number">1</span>),</span><br><span class="line">    i.<span class="property">DataPackCrypt</span>.<span class="title function_">crypto</span>(e);</span><br><span class="line">    <span class="keyword">var</span> s = n + o.<span class="property">BINARY_DATA_PACK_HEADER_SIZE</span></span><br><span class="line">      , l = <span class="keyword">new</span> <span class="title class_">ArrayBuffer</span>(s * t)</span><br><span class="line">      , c = <span class="keyword">new</span> <span class="title class_">DataView</span>(l);</span><br><span class="line">    <span class="keyword">if</span> (c.<span class="title function_">setInt32</span>(<span class="number">0</span>, e.<span class="property">head</span>.<span class="property">c</span> || <span class="number">0</span>),</span><br><span class="line">    c.<span class="title function_">setInt32</span>(<span class="number">4</span>, e.<span class="property">head</span>.<span class="property">o</span> || <span class="number">0</span>),</span><br><span class="line">    c.<span class="title function_">setInt32</span>(<span class="number">8</span>, n || <span class="number">0</span>),</span><br><span class="line">    n &gt; <span class="number">0</span> &amp;&amp; e.<span class="property">body</span>.<span class="property">bytes</span>) &#123;</span><br><span class="line">        c.<span class="title function_">setInt8</span>(<span class="number">12</span>, e.<span class="property">body</span>.<span class="property">format</span> || <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> d = <span class="keyword">new</span> <span class="title class_">DataView</span>(e.<span class="property">body</span>.<span class="property">bytes</span>), u = <span class="number">0</span>; u &lt; e.<span class="property">body</span>.<span class="property">bytes</span>.<span class="property">byteLength</span>; u++)</span><br><span class="line">            c.<span class="title function_">setUint8</span>(u + <span class="number">13</span>, d.<span class="title function_">getUint8</span>(u))</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着看代码里有一段 <code>i.DataPackCrypt.crypto(e);</code>，OK恭喜你离真相越来越近了，接着搜 <code>crypto</code> 会找到如下函数，为了图方便这里把关联函数 <code>convert</code> 函数也一并附上</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> e.<span class="property">convert</span> = <span class="keyword">function</span>(<span class="params">e, t</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> o, a = e.<span class="property">head</span>.<span class="property">o</span>, r = e.<span class="property">body</span>.<span class="property">format</span>, s = <span class="keyword">new</span> <span class="title class_">ArrayBuffer</span>(<span class="number">4</span>), l = <span class="number">16843009</span> | e.<span class="property">head</span>.<span class="property">o</span>, c = <span class="keyword">new</span> <span class="title class_">DataView</span>(s);</span><br><span class="line">    c.<span class="title function_">setInt32</span>(<span class="number">0</span>, l);</span><br><span class="line">    <span class="keyword">var</span> d = e.<span class="property">body</span>.<span class="property">format</span> ^ c.<span class="title function_">getUint8</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (e.<span class="property">body</span>.<span class="property">format</span> = d,</span><br><span class="line">    (<span class="literal">null</span> === (o = e.<span class="property">body</span>.<span class="property">bytes</span>) || <span class="keyword">void</span> <span class="number">0</span> === o ? <span class="keyword">void</span> <span class="number">0</span> : o.<span class="property">byteLength</span>) &lt; <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> !<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> u = <span class="keyword">new</span> <span class="title class_">DataView</span>(e.<span class="property">body</span>.<span class="property">bytes</span>), p = <span class="number">0</span>; p &lt; e.<span class="property">body</span>.<span class="property">bytes</span>.<span class="property">byteLength</span>; p++) &#123;</span><br><span class="line">        <span class="keyword">var</span> f = (p + <span class="number">1</span>) % <span class="number">4</span></span><br><span class="line">          , h = c.<span class="title function_">getUint8</span>(f)</span><br><span class="line">          , _ = u.<span class="title function_">getUint8</span>(p);</span><br><span class="line">        u.<span class="title function_">setUint8</span>(p, _ ^ h)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;(加密)&quot;</span> === t &amp;&amp; e.<span class="property">body</span>.<span class="property">format</span> &gt; <span class="number">0</span> &amp;&amp; (<span class="number">5643</span> === e.<span class="property">head</span>.<span class="property">c</span> || <span class="number">6001</span> === e.<span class="property">head</span>.<span class="property">c</span> || <span class="number">2028</span> === e.<span class="property">head</span>.<span class="property">c</span>)) &#123;</span><br><span class="line">        <span class="keyword">var</span> m = e.<span class="property">head</span>.<span class="property">c</span></span><br><span class="line">          , y = <span class="string">&quot;dbFormat:&quot;</span> + r + <span class="string">&quot;, dbKey:&quot;</span> + a + <span class="string">&quot;, vaFormat: &quot;</span> + d;</span><br><span class="line">        n.<span class="title function_">log</span>(<span class="string">&quot;(SocketHeader) 可能的异常情况 | &quot;</span> + m + <span class="string">&quot; | &quot;</span> + y),</span><br><span class="line">        i.<span class="title function_">trace</span>(&#123;</span><br><span class="line">            <span class="attr">id</span>: m,</span><br><span class="line">            <span class="attr">data</span>: y,</span><br><span class="line">            <span class="attr">resp</span>: <span class="string">&quot;可能的异常情况&quot;</span></span><br><span class="line">        &#125;, <span class="string">&quot;SocketHeader&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> !<span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">,</span><br><span class="line">e.<span class="property">crypto</span> = <span class="keyword">function</span>(<span class="params">t</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (t.<span class="property">alreadyEncode</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (e.<span class="property">_codeWarningLog</span>) &#123;</span><br><span class="line">            e.<span class="property">_codeWarningLog</span> = !<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">var</span> o = <span class="keyword">new</span> <span class="title class_">Error</span>;</span><br><span class="line">            i.<span class="title function_">trace</span>(&#123;</span><br><span class="line">                <span class="attr">resp</span>: <span class="string">&quot;意料之外的Socket消息加密请求&quot;</span>,</span><br><span class="line">                <span class="attr">id</span>: t.<span class="property">head</span>.<span class="property">c</span>,</span><br><span class="line">                <span class="attr">data</span>: o.<span class="property">stack</span></span><br><span class="line">            &#125;, <span class="string">&quot;CodeWarning&quot;</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> !<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> a = e.<span class="title function_">convert</span>(t, <span class="string">&quot;(加密)&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> t.<span class="property">alreadyEncode</span> = !<span class="number">0</span>,</span><br><span class="line">    a</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此发送的消息协议 js 代码就全部得到了</p>
+<h2 id="代码翻译"><a href="#代码翻译" class="headerlink" title="代码翻译"></a>代码翻译</h2><p>然而有 js 代码，看不懂也白搭，在代码翻译这一块儿也耗费了我一两天时间，毕竟不是前端专家，翻译期间找了前端同事，前端同事也直摆手说看着太复杂，我寻思都到这一步了还能放弃吗？不行，在我的摸索下，终于还是让我翻译出来了。</p>
+<p>这里直接说答案，借助 <code>AI</code>，把 <code>js</code> 代码放入让 <code>AI</code> 辅助转换成其他语言 有条件的推荐使用 <code>ChatGPT</code>，如果没有条件的也可以用百度的 <code>文言一心</code>，不过经测试效果不如 <code>ChatGPT</code>，但总的来讲还是要比自己去学一遍前端要快上不少。</p>
+<p>由于我是用 go 来写挂机脚本所以指定 AI 翻译为 go，微调删减之后可以得到如下代码</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;bytes&quot;</span></span><br><span class="line">	<span class="string">&quot;encoding/binary&quot;</span></span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Message <span class="keyword">struct</span> &#123;</span><br><span class="line">	Head <span class="keyword">struct</span> &#123;</span><br><span class="line">		Cmd   <span class="type">int32</span></span><br><span class="line">		Order <span class="type">uint32</span></span><br><span class="line">	&#125;</span><br><span class="line">	Body <span class="keyword">struct</span> &#123;</span><br><span class="line">		Format <span class="type">uint8</span></span><br><span class="line">		Bytes  []<span class="type">byte</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Message)</span></span> convert() &#123;</span><br><span class="line">	o := m.Head.Order</span><br><span class="line">	l := <span class="type">uint32</span>(<span class="number">16843009</span> | o)</span><br><span class="line">	c := <span class="built_in">make</span>([]<span class="type">byte</span>, <span class="number">4</span>)</span><br><span class="line">	binary.BigEndian.PutUint32(c, l)</span><br><span class="line">	u := m.Body.Bytes</span><br><span class="line">	<span class="keyword">for</span> p := <span class="keyword">range</span> u &#123;</span><br><span class="line">		f := (p + <span class="number">1</span>) % <span class="number">4</span></span><br><span class="line">		u[p] = u[p] ^ c[f]</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Message)</span></span> Encode() []<span class="type">byte</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> n <span class="type">uint32</span></span><br><span class="line">	r := m.Body.Bytes</span><br><span class="line">	<span class="keyword">if</span> r == <span class="literal">nil</span> &#123;</span><br><span class="line">		n = <span class="number">0</span></span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		n = <span class="type">uint32</span>(<span class="built_in">len</span>(r))</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> n &gt; <span class="number">0</span> &#123;</span><br><span class="line">		n += <span class="number">1</span></span><br><span class="line">	&#125;</span><br><span class="line">	m.convert()</span><br><span class="line">	l := <span class="built_in">new</span>(bytes.Buffer)</span><br><span class="line">	binary.Write(l, binary.BigEndian, m.Head.Cmd)</span><br><span class="line">	binary.Write(l, binary.BigEndian, m.Head.Order)</span><br><span class="line">	binary.Write(l, binary.BigEndian, n)</span><br><span class="line">	binary.Write(l, binary.BigEndian, m.Body.Format)</span><br><span class="line">	<span class="keyword">for</span> _, v := <span class="keyword">range</span> m.Body.Bytes &#123;</span><br><span class="line">		binary.Write(l, binary.BigEndian, v)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> l.Bytes()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码包含了 <code>buildJsonPack</code> 里打包的代码，可以完美模拟页面的请求操作。</p>
+<p>OK，模拟请求已经可以做到了，那么响应呢，钥匙还在 <code>_webSocket</code>，在上面源码定位章节里，可以找到 <code>this._webSocket.onmessage = this.onMessage.bind(this),</code> 这意味着我们搜 <code>onMessage</code> 即可找到消息接收的处理，类似如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">e.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">onMessage</span> = <span class="keyword">function</span>(<span class="params">e</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!d.<span class="property">SocketCore</span>.<span class="property">TEST_BLOCK_RECEIVE</span>)</span><br><span class="line">        <span class="keyword">if</span> (e.<span class="property">data</span> <span class="keyword">instanceof</span> <span class="title class_">ArrayBuffer</span>)</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">_delegate</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">queue</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">queue</span>.<span class="title function_">add</span>(e.<span class="property">data</span>);</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> t = e.<span class="property">data</span></span><br><span class="line">              , o = <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">var</span> a = e.<span class="property">receiveTime</span> || (<span class="keyword">new</span> <span class="title class_">Date</span>).<span class="title function_">getTime</span>();</span><br><span class="line">                o = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(t),</span><br><span class="line">                f.<span class="property">ProtoBufBiz</span>.<span class="property">instance</span>.<span class="title function_">isDisable</span>(o.<span class="property">c</span>) &amp;&amp; p.<span class="property">BinaryMsgBuilder</span>.<span class="title function_">opJsonPack</span>(o),</span><br><span class="line">                o.<span class="property">c</span> != <span class="variable language_">this</span>.<span class="property">_ignoreMsgCode</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">onReceive</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="title function_">onReceive</span>(o, t.<span class="property">length</span>, a),</span><br><span class="line">                <span class="variable language_">this</span>.<span class="property">_delegate</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">onMessage</span> &amp;&amp; <span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">onMessage</span>.<span class="title function_">call</span>(<span class="variable language_">this</span>.<span class="property">_delegate</span>.<span class="property">target</span>, o, a)</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                r.<span class="title function_">error</span>(e)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于这部分功能的解析大家可以仿照上面发送的流程分析，这里就不再赘述了</p>
+<h2 id="移花接木"><a href="#移花接木" class="headerlink" title="移花接木"></a>移花接木</h2><p>协议分析了，代码也翻译了，就来到了同样重要的一步，如何实现脚本功能？这里我采用服务代理的方式，把自己变成一个 websocket 服务接收转发网页的请求，同时针对服务推送的消息做自动化处理，中间加一些定时操作，实现完全的挂机处理的能力。嗯，这部分大家按自己需求自行实现。</p>
+<p>本节主要讲如何侵入页面改写接入的服务器，毕竟网页是别人的，你要做一些小动作肯定是要动页面的，这里提供两个思路：</p>
+<ul>
+<li>编写 http 代理服务，在请求响应间改写关键数据， 这种适合多人共享的情况下，其他人只用访问篡改后的页面就行</li>
+<li>用 <code>篡改猴</code> 篡改 <code>ajax</code> 的服务器连接的响应，这种简单轻便，适合自娱自乐</li>
+</ul>
+<p>很明显我只是自娱自乐，所以我用了第二种方式，安装 <code>篡改猴</code> 插件，新建一个脚本，下面是一个针对 ajax 请求拦截处理的代码，理论上适用其他站点</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">function</span> (<span class="params">open</span>) &#123;</span><br><span class="line">    <span class="title class_">XMLHttpRequest</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">open</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;readystatechange&quot;</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">readyState</span> === <span class="title class_">XMLHttpRequest</span>.<span class="property">DONE</span>) &#123;</span><br><span class="line">                <span class="keyword">const</span> status = <span class="variable language_">this</span>.<span class="property">status</span>;</span><br><span class="line">                <span class="keyword">if</span> (status === <span class="number">0</span> || (status &gt;= <span class="number">200</span> &amp;&amp; status &lt; <span class="number">400</span>)) &#123;</span><br><span class="line">                    <span class="comment">// The request has been completed successfully</span></span><br><span class="line">                    <span class="comment">// 侵入代码</span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// Oh no! There has been an error with the request!</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="literal">false</span>);</span><br><span class="line">        open.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;)(<span class="title class_">XMLHttpRequest</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">open</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在侵入代码部分我的逻辑如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> u = <span class="keyword">new</span> <span class="title function_">URL</span>(<span class="variable language_">this</span>.<span class="property">responseURL</span>)</span><br><span class="line"><span class="keyword">if</span> (u.<span class="property">pathname</span> === <span class="string">&quot;/appServerListServlet&quot;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="keyword">const</span> reslut = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(<span class="variable language_">this</span>.<span class="property">responseText</span>)</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;will connect url&quot;</span>, reslut.<span class="property">url</span>)</span><br><span class="line">    <span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(reslut.<span class="property">url</span>)</span><br><span class="line">    <span class="keyword">const</span> n = <span class="string">&quot;ws://127.0.0.1:8080&quot;</span> + url.<span class="property">pathname</span></span><br><span class="line">    reslut.<span class="property">wssLinesCN</span> = reslut.<span class="property">wssLinesCN</span>.<span class="title function_">replace</span>(reslut.<span class="property">url</span>, n)</span><br><span class="line">    reslut.<span class="property">appUrl</span> = n</span><br><span class="line">    reslut.<span class="property">url</span> = n</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(<span class="variable language_">this</span>, <span class="string">&#x27;response&#x27;</span>, &#123; <span class="attr">writable</span>: <span class="literal">true</span> &#125;);</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(<span class="variable language_">this</span>, <span class="string">&#x27;responseText&#x27;</span>, &#123; <span class="attr">writable</span>: <span class="literal">true</span> &#125;);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">response</span> = <span class="variable language_">this</span>.<span class="property">responseText</span> = <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(reslut);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的逻辑主要是拦截 <code>/appServerListServlet</code>的响应内容， 并替换其中的连接地址为本机地址，OK自此一套完整的链路就打通了。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>整个研究分析的过程大概是三四天吧，出于好奇与兴趣研究了下，没想到也有不小的收获，一个是在 <code>AI</code> 的使用上，另一个就是在 <code>篡改猴</code> 的使用上，这两者为我处理问题打开了新思路和新方法。不过没想到的是逆向实现了，游戏却索然无味了，还是代码来的乐趣多。希望这篇文章可以帮助到你。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Web/" rel="tag"># Web</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/10/13/2023/20231013/" rel="prev" title="开发板刷入Arch Linux">
+                  <i class="fa fa-angle-left"></i> 开发板刷入Arch Linux
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2017 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">吴志康</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/gowsp" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://unpkg.com/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/comments.js"></script><script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/next-boot.js"></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://unpkg.com/mermaid@10.5.0/dist/mermaid.min.js","integrity":"sha256-K7oJiQlDulzl24ZUFOywuYme1JqBBvQzK6m8qHjt9Gk="}}</script>
+  <script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/third-party/tags/mermaid.js"></script>
+
+
+
+  <script src="https://unpkg.com/hexo-theme-next@8.18.2/source/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
