@@ -124,7 +124,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">81</span>
+          <span class="site-state-item-count">82</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -133,7 +133,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-count">48</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -242,7 +242,7 @@
 
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 根据 boot.cmd 重新生成 boot.scr</span></span><br><span class="line">mkimage -C none -A arm64 -T script -d boot.cmd boot.scr</span><br><span class="line"><span class="comment"># 拷贝 boot.scr 至指定目录下</span></span><br><span class="line"><span class="built_in">cp</span> boot.scr root/boot/boot.scr</span><br><span class="line"><span class="comment"># 结束挂载</span></span><br><span class="line">umount root</span><br></pre></td></tr></table></figure>
 
-<h3 id="引导写入"><a href="#引导写入" class="headerlink" title="引导写入"></a>引导写入</h3><p>U-Boot 用于嵌入式系统的引导加载程序，此处可以直接用本人编译好的引导程序，<a href="u-boot-sunxi-with-spl.bin">点此下载</a>，当然如果有兴趣研究 U-Boot 编译可以参考 <a target="_blank" rel="noopener" href="https://github.com/asxtree/CompileKernelandAlpineLinuxforOrangePi">github</a> 上的一篇说明自行实践</p>
+<h3 id="引导写入"><a href="#引导写入" class="headerlink" title="引导写入"></a>引导写入</h3><p>U-Boot 用于嵌入式系统的引导加载程序，此处可以直接用本人编译好的引导程序，<a href="/2023/10/13/2023/20231013/u-boot-sunxi-with-spl.bin" title="点此下载">点此下载</a>，当然如果有兴趣研究 U-Boot 编译可以参考 <a target="_blank" rel="noopener" href="https://github.com/asxtree/CompileKernelandAlpineLinuxforOrangePi">github</a> 上的一篇说明自行实践</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 写入引导</span></span><br><span class="line"><span class="built_in">dd</span> <span class="keyword">if</span>=u-boot-sunxi-with-spl.bin of=/dev/sdX bs=8k seek=1</span><br></pre></td></tr></table></figure>
 
 <h2 id="开机体验"><a href="#开机体验" class="headerlink" title="开机体验"></a>开机体验</h2><p>引导程序写完后将 SD 安回开发板中，插上网线电源开机，观察路由器设备列表新出现的设备，使用 SSH 连接， 默认的帐号信息如下</p>
@@ -250,7 +250,7 @@
 <li>普通账户 alarm， 密码 alarm</li>
 <li>特权账户 root ，密码 root</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pacman-key --init</span><br><span class="line">pacman-key --populate archlinuxarm</span><br><span class="line"><span class="comment"># 编辑镜像文件</span></span><br><span class="line">vi /etc/pacman.d/mirrorlist </span><br><span class="line"><span class="comment"># 在第一行添加国内源</span></span><br><span class="line">Server = https://mirrors.ustc.edu.cn/archlinuxarm/<span class="variable">$arch</span>/<span class="variable">$repo</span></span><br><span class="line">保存退出</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">pacman-key --init</span><br><span class="line">pacman-key --populate archlinuxarm</span><br><span class="line"><span class="comment"># 编辑镜像文件</span></span><br><span class="line">vi /etc/pacman.d/mirrorlist </span><br><span class="line"><span class="comment"># 在第一行添加国内源</span></span><br><span class="line">Server = https://mirrors.ustc.edu.cn/archlinuxarm/<span class="variable">$arch</span>/<span class="variable">$repo</span></span><br><span class="line">保存退出</span><br><span class="line"><span class="comment"># 设置时区</span></span><br><span class="line">timedatectl set-timezone Asia/Shanghai</span><br></pre></td></tr></table></figure>
 
 <p>自此完成相关安装操作</p>
 <h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>其实折腾这个也有一段时间了，之前尝试了 alpine 系统，无法启动一直也没找到原因，后面索性就直接换系统，Arch Linux 优点就是滚动更新，还是比较好用的，希望本次的内容可以帮助到你。</p>
